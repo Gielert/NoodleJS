@@ -5,15 +5,10 @@ var client = NoodleJS.newClient({
     name: 'NoodleJS'
 });
 
-client.on('textMessage', onTextMessage);
-client.on('userChange', onUserChange);
-
-function onUserChange(e) {
-    if(e.type == 'UserChangeConnected') {
-        e.user.sendMessage("Hello " + e.user.name + "!");
+client.on('userChange', function(event) {
+    if(event.type === 'UserChangeChannel') {
+        if(event.user.channel.id == client.self.channel.id) {
+            event.user.sendMessage("Hello " + event.user.name + "!");
+        }
     }
-}
-
-function onTextMessage(e) {
-    e.sender.sendMessage("Hallo " + e.message);
-}
+});
