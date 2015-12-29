@@ -1,0 +1,19 @@
+{
+  "name": "noodle-js",
+  "version": "0.0.1",
+  "description": "A NodeJS mumble client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "NodeJS",
+    "Mumble"
+  ],
+  "author": "Michiel",
+  "license": "MIT",
+  "dependencies": {
+    "node-opus": "^0.1.11",
+    "protobufjs": "^4.1.3"
+  }
+}
