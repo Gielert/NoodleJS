@@ -1,6 +1,6 @@
 {
   "name": "noodle-js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/Gielert/NoodleJS",
   "bugs": "https://github.com/Gielert/NoodleJS/issues",
   "description": "A NodeJS mumble client",
