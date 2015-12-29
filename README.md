@@ -1,6 +1,6 @@
 # NoodleJS - A NodeJS Mumble client
 NoodleJS is in a very early stage of development. So don't expect much of it.
-This is based of Node-Mumble, but with the sort-like implementation of Gumble. I felt that Node-Mumble wasn't satisfying my needs so I decided to create my own client. The purpose of this client is most likely for creating bots.
+This client is based on Node-Mumble, but with the sort-like implementation of Gumble. I felt that Node-Mumble wasn't satisfying my needs so I decided to create my own client. The purpose of this client is most likely for creating bots.
 
 Feel free to checkout both repositories as they are both great to use!
 * [Node-Mumble](https://github.com/Rantanen/node-mumble)
