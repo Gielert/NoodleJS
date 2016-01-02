@@ -1,8 +1,12 @@
 {
   "name": "noodle-js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "homepage": "https://github.com/Gielert/NoodleJS",
   "bugs": "https://github.com/Gielert/NoodleJS/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gielert/NoodleJS.git"
+  },
   "description": "A NodeJS mumble client",
   "main": "index.js",
   "scripts": {
