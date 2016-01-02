@@ -10,7 +10,7 @@ client.on('connect', function(event) {
 });
 
 client.on('textMessage', function(event) {
-    console.log("Received a message: " + event.textMessage.message);
+    client.playAudio('test.ogg');
 });
 
 client.on('userChange', function(event) {
