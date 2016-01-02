@@ -1,14 +1,22 @@
-var NoodleJS = require('../index.js');
+var NoodleJS = require('../');
 
 var client = NoodleJS.newClient({
-    url: '192.168.66.66',
+    url: 'mymumbleserver.domain',
     name: 'NoodleJS'
 });
 
+client.on('connect', function(event) {
+    console.log("NoodleJS connected to the server!");
+});
+
+client.on('textMessage', function(event) {
+    console.log("Received a message: " + event.textMessage.message);
+});
+
 client.on('userChange', function(event) {
-    if(event.type === 'UserChangeChannel') {
-        if(event.user.channel.id == client.self.channel.id) {
-            event.user.sendMessage("Hello " + event.user.name + "!");
-        }
-    }
+    console.log(event.user.name + " has changed!");
+});
+
+client.on('channelChange', function(event) {
+    console.log(event.channel.name + " has changed!");
 });

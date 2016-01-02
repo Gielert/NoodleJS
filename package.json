@@ -15,6 +15,7 @@
   "author": "Michiel",
   "license": "MIT",
   "dependencies": {
+    "fluent-ffmpeg": "^2.0.1",
     "node-opus": "^0.1.11",
     "protobufjs": "^4.1.3"
   }

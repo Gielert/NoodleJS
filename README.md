@@ -21,36 +21,7 @@ var client = NoodleJS.newClient({
 });
 ```
 
-## Events
-The client emits events when something on the server happens, for example when a user disconnects or connects.
-
-### UserChange events
-You can handle user event by calling the 'userChange' event on the client.
-###### UserChangeEvent
-```javascript
-{
-    user: {...},
-    type: ...
-}
-```
-###### Event types
-| Event                 | Returns         |
-|-----------------------|-----------------|
-|UserChangeConnected    | UserChangeEvent |
-|UserChangeDisconnected | UserChangeEvent |
-|UserChangeAudio        | UserChangeEvent |
-|UserChangeName         | UserChangeEvent |
-|UserChangeChannel      | UserChangeEvent |
-|UserChangeComment      | UserChangeEvent |
-|UserChangeTexture      | UserChangeEvent |
-
-###### Example
-```javascript
-client.on('userChange', function(e) {
-    if(e.type == 'UserChangeConnected') {
-        e.user.sendMessage("Hello " + e.user.name + "!");
-    }
-});
-```
+## More info
+For more info check the wiki
 
 For a full example check the examples in the repository.
