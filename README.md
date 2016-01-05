@@ -22,6 +22,6 @@ var client = NoodleJS.newClient({
 ```
 
 ## More info
-For more info check the wiki
+For more info check the [wiki](https://github.com/Gielert/NoodleJS/wiki)
 
 For a full example check the examples in the repository.
