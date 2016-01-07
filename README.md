@@ -9,7 +9,12 @@ Feel free to checkout both repositories as they are both great to use!
 ## So whats working
 * Receiving text messages
 * Sending a message to a user
+* Sending a message to a channel
 * Handling user events
+* Handling channel events
+* Handling client connect event
+* Playing audio from the client
+* Setting volume of the client
 
 ## Basic setup
 ```javascript
