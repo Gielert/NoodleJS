@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * @summary Converts a number to Mumble varint
  *
@@ -8,7 +6,7 @@
  * @param {Number} Integer to convert
  * @return {Buffer} Varint encoded number
  */
-exports.toVarint = function( i ) {
+module.exports.toVarint = function( i ) {
     var absValue = Math.abs( i );
 
     var arr = [];
@@ -48,3 +46,9 @@ exports.toVarint = function( i ) {
         length: arr.length
     };
 };
+
+module.exports.encodeVersion = function(major, minor, patch) {
+    return  ((major & 0xffff) << 16) |
+            ((minor & 0xff) << 8) |
+            (patch & 0xff)
+}
