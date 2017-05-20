@@ -1,9 +1,10 @@
 const EventEmitter = require('events').EventEmitter
 const Connection = require('./Connection')
-const util = require('./util')
+const Util = require('./Util')
 const ServerSync = require('./handlers/ServerSync')
 const UserState = require('./handlers/UserState')
 const ChannelState = require('./handlers/ChannelState')
+const Collection = require('./Collection')
 
 class Client extends EventEmitter {
     constructor(options = {}) {
@@ -14,7 +15,7 @@ class Client extends EventEmitter {
         this.connection = new Connection(options)
         this.connection.on('connected', () => {
             this.connection.writeProto('Version', {
-                version: util.encodeVersion(1, 0, 0),
+                version: Util.encodeVersion(1, 0, 0),
                 release: 'NoodleJS Client',
                 os: 'NodeJS',
                 os_version: process.version
@@ -28,8 +29,8 @@ class Client extends EventEmitter {
             this._pingRoutine()
         })
 
-        this.channels = {}
-        this.users = {}
+        this.channels = new Collection()
+        this.users = new Collection()
 
         this.connection.on('ServerSync', data => new ServerSync(this).handle(data))
         this.connection.on('UserState', data => new UserState(this).handle(data));

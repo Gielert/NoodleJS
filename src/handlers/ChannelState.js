@@ -1,37 +1,21 @@
 const AbstractHandler = require('./AbstractHandler')
 const Channel = require('../Channel')
+const Util = require('../Util')
 
 class ChannelState extends AbstractHandler {
     handle(data) {
-        if (data.channelId == null)
-            return client.emit('error', 'Incomplete Protobuf')
+        let channel = this.client.channels.get(data.channelId)
 
-        let channelId = data.channelId
-        let channel = this.client.channels[channelId] || new Channel(channelId)
-        this.client.channels[channelId] = channel
-        channel.client = this.client
-
-        if (data.parent) {
-            if(channel.parent)
-                delete channel.parent.children[channelId]
-
-            let newParent = this.client.channels[data.parent]
-            if(newParent != channel.parent)
-                channel.parent.children[channelId] = channel
+        if(channel) {
+            const oldChannel = Util.cloneObject(channel)
+            channel.setup(data)
+            if (this.client.synced) this.client.emit('channelUpdate', oldChannel, channel)
+        } else {
+            channel = new Channel(this.client, data)
+            if (this.client.synced) this.client.emit('channelCreate', channel)
         }
 
-        if (data.name)
-            channel.name = data.name
-
-        if (data.description)
-            channel.description = data.description
-
-        if(data.position)
-            channel.position = data.position
-
-        if (data.descriptionHash)
-            channel.descriptionHash = data.descriptionHash
-
+        this.client.channels.set(channel.channelId, channel)
     }
 }
 

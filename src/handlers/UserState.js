@@ -1,29 +1,20 @@
 const AbstractHandler = require('./AbstractHandler')
 const User = require('../User')
+const Util = require('../Util')
 
 class UserState extends AbstractHandler {
     handle(data) {
+        let user = this.client.users.get(data.session)
 
-        if (data.session == null)
-            return this.client.emit('error', 'Incomplete Protobuf')
-
-        let event = {}
-
-        let session = data.session
-        let user = this.client.users[session] || new User(session)
-        user.channel = this.client.channels[0]
-        user.client = this.client
-
-        if (user.channel == null)
-            return this.client.emit('error', 'Invalid Protobuf')
-
-        user.channel.users[session] = user
-
-        if(data.name)
-            user.name = data.name
-
-        if(data.userId)
-            user.id = data.userId
+        if (user) {
+            const oldUser = Util.cloneObject(user)
+            user.setup(data)
+            if (this.client.synced) this.client.emit('userChange', oldUser, user)
+        } else {
+            user = new User(this.client, data)
+            if (this.client.synced) this.client.emit('userJoin', user)
+        }
+        this.client.users.set(user.session, user)
     }
 }
 
