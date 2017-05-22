@@ -2,7 +2,7 @@ const Client = require('../src/Client')
 
 const client = new Client();
 
-client.on('ready', (data) => {
+client.on('ready', data => {
     // client.users.find('name', 'SuperUser').sendMessage('check')
 
     client.sendMessage('Damn this works well')
@@ -24,6 +24,8 @@ client.on('userChange', (oldUser, newUser) => {
 
 client.on('channelRemove', channelId => console.log(channelId))
 
-client.on('textMessage', textMessage => console.log(textMessage))
+client.on('textMessage', textMessage => {
+    textMessage.reply("oke")
+})
 
 client.on('userDisconnect', user => console.log(user))
