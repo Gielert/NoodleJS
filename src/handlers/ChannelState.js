@@ -7,7 +7,7 @@ class ChannelState extends AbstractHandler {
         let channel = this.client.channels.get(data.channelId)
 
         if(channel) {
-            const oldChannel = Util.cloneObject(channel)
+            const oldChannel = new Channel(this.client, channel)
             channel.setup(data)
             if (this.client.synced) this.client.emit('channelUpdate', oldChannel, channel)
         } else {

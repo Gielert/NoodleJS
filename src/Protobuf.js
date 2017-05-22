@@ -26,7 +26,7 @@ class Protobuf {
     decodePacket(type_id, buffer) {
         const type = this.nameById(type_id)
         const packet = this.mumble.lookup(`MumbleProto.${type}`)
-        return packet.decode(buffer)
+        return packet.decode(buffer).toJSON()
     }
 
     nameById(id) {

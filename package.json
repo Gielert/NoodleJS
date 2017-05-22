@@ -20,6 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.5.0",
+    "deep-clone": "^3.0.2",
     "fluent-ffmpeg": "^2.0.1",
     "node-opus": "^0.2.6",
     "protobufjs": "^6.7.3"
