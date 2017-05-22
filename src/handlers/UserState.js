@@ -1,5 +1,5 @@
 const AbstractHandler = require('./AbstractHandler')
-const User = require('../User')
+const User = require('../structures/User')
 const Util = require('../Util')
 
 class UserState extends AbstractHandler {

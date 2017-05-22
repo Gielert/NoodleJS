@@ -3,8 +3,11 @@ const Connection = require('./Connection')
 const Util = require('./Util')
 const ServerSync = require('./handlers/ServerSync')
 const UserState = require('./handlers/UserState')
+const UserRemove = require('./handlers/UserRemove')
 const ChannelState = require('./handlers/ChannelState')
-const Collection = require('./Collection')
+const ChannelRemove = require('./handlers/ChannelRemove')
+const TextMessage = require('./handlers/TextMessage')
+const Collection = require('./structures/Collection')
 
 class Client extends EventEmitter {
     constructor(options = {}) {
@@ -32,12 +35,20 @@ class Client extends EventEmitter {
         this.channels = new Collection()
         this.users = new Collection()
 
-        this.connection.on('ServerSync', data => new ServerSync(this).handle(data))
-        this.connection.on('UserState', data => new UserState(this).handle(data));
-        this.connection.on('ChannelState', data => new ChannelState(this).handle(data));
-        // this.connection.on('TextMessage', data => console.log(data));
-        // this.connection.on('UserRemove', data => console.log(data));
-        // this.connection.on('ChannelRemove', data => console.log(data));
+        const serverSync = new ServerSync(this)
+        const userState = new UserState(this)
+        const userRemove = new UserRemove(this)
+        const channelState = new ChannelState(this)
+        const channelRemove = new ChannelRemove(this)
+        const textMessage = new TextMessage(this)
+
+        this.connection.on('ServerSync', data => serverSync.handle(data))
+        this.connection.on('UserState', data => userState.handle(data))
+        this.connection.on('UserRemove', data => userRemove.handle(data));
+        this.connection.on('ChannelRemove', data => channelRemove.handle(data));
+        this.connection.on('ChannelState', data => channelState.handle(data))
+        // this.connection.on('CryptSetup', data => console.log(data))
+        this.connection.on('TextMessage', data => textMessage.handle(data));
     }
 
     _pingRoutine() {
@@ -45,6 +56,11 @@ class Client extends EventEmitter {
             this.connection.writeProto('Ping', {timestamp: Date.now()})
         }, 15000)
     }
+
+    sendMessage(message, recursive) {
+        return this.user.channel.sendMessage(message, recursive)
+    }
+
 }
 
 module.exports = Client

@@ -1,5 +1,5 @@
 const AbstractHandler = require('./AbstractHandler')
-const Channel = require('../Channel')
+const Channel = require('../structures/Channel')
 const Util = require('../Util')
 
 class ChannelState extends AbstractHandler {
@@ -7,7 +7,7 @@ class ChannelState extends AbstractHandler {
         let channel = this.client.channels.get(data.channelId)
 
         if(channel) {
-            const oldChannel = new Channel(this.client, channel)
+            const oldChannel = Util.cloneObject(channel)
             channel.setup(data)
             if (this.client.synced) this.client.emit('channelUpdate', oldChannel, channel)
         } else {
@@ -15,7 +15,7 @@ class ChannelState extends AbstractHandler {
             if (this.client.synced) this.client.emit('channelCreate', channel)
         }
 
-        this.client.channels.set(channel.channelId, channel)
+        this.client.channels.set(channel.id, channel)
     }
 }
 

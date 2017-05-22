@@ -1,4 +1,7 @@
 const Collection = require('./Collection')
+const TextMessage = require('./TextMessage')
+const Util = require('../Util')
+const Promise = require('bluebird')
 
 class Channel {
 
@@ -16,10 +19,19 @@ class Channel {
         if (data.channelId == null)
             return
 
-        this.channelId = data.channelId
-
-        if (data.parent != null)
-            this.parent = this.client.channels.get(data.parent)
+        this.id = data.channelId
+        if (data.parent != null) {
+            if (this.parent) {
+                if (this.parent.id !== data.parent) {
+                    this.parent.children.delete(this.id)
+                    this.parent = this.client.channels.get(data.parent)
+                    this.parent.children.set(this.id, this)
+                }
+            } else {
+                this.parent = this.client.channels.get(data.parent)
+                this.parent.children.set(this.id, this)
+            }
+        }
 
         if (data.name != null)
             this.name = data.name
@@ -28,7 +40,7 @@ class Channel {
             data.links.forEach(val => {
                 const channel = this.client.channels.get(val)
                 if (channel)
-                    this.links.set(channel.channelId, channel)
+                    this.links.set(channel.id, channel)
             })
 
         if (this.description != null)
@@ -38,14 +50,14 @@ class Channel {
             data.linksAdd.forEach(val => {
                 const channel = this.client.channels.get(val)
                 if (channel)
-                    this.links.set(channel.channelId, channel)
+                    this.links.set(channel.id, channel)
             })
 
         if (data.linksRemove != null)
             data.linksRemove.forEach(val => {
                 const channel = this.client.channels.get(val)
                 if (channel)
-                    this.links.delete(channel.channelId)
+                    this.links.delete(channel.id)
             })
 
         if (this.temporary != null)
@@ -55,8 +67,19 @@ class Channel {
             this.position = data.position
     }
 
-    sendMessage() {
-        console.log("keke")
+    sendMessage(message, recursive) {
+        let textMessage = new TextMessage()
+        textMessage.content = message
+
+        if (recursive) {
+            textMessage.trees.set(this.id, this)
+        } else {
+            textMessage.channels.set(this.id, this)
+        }
+
+        return this.client.connection
+            .writeProto('TextMessage', textMessage.toPacket())
+            .then(() => Promise.resolve(textMessage))
     }
 
 }

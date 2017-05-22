@@ -1,5 +1,6 @@
 const tls = require('tls');
 const Protobuf = require('./Protobuf')
+const Promise = require('bluebird')
 const EventEmitter = require('events').EventEmitter
 
 class Connection extends EventEmitter {
@@ -107,9 +108,15 @@ class Connection extends EventEmitter {
     }
 
     writeProto(type, data) {
-        const packet = this.protobuf.encodePacket(type, data)
-        this.writeHeader(this.protobuf.idByName(type), packet.length)
-        this._writePacket(packet)
+        try {
+            const packet = this.protobuf.encodePacket(type, data)
+            this.writeHeader(this.protobuf.idByName(type), packet.length)
+            this._writePacket(packet)
+            return Promise.resolve()
+        } catch(e) {
+            return Promise.reject(e)
+        }
+
     }
 }
 
