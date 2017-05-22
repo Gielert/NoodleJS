@@ -3,10 +3,11 @@ const Client = require('../src/Client')
 const client = new Client();
 
 client.on('ready', (data) => {
-    client.channels.first().sendMessage('check')
+    // client.users.find('name', 'SuperUser').sendMessage('check')
+
+    client.sendMessage('Damn this works well')
         .then(message => console.log(message))
         .catch(err => console.log(err))
-    // client.sendMessage('Damn this works well')
 })
 
 client.on('channelUpdate', (oldChannel, newChannel) => {

@@ -1,3 +1,5 @@
+const TextMessage = require('./TextMessage')
+
 class User {
 
     constructor(client, data) {
@@ -29,8 +31,15 @@ class User {
             this.actor = this.client.users.get(data.actor)
     }
 
-    sendMessage() {
+    sendMessage(message) {
+        let textMessage = new TextMessage()
+        textMessage.content = message
 
+        textMessage.users.set(this.session, this)
+
+        return this.client.connection
+            .writeProto('TextMessage', textMessage.toPacket())
+            .then(() => Promise.resolve(textMessage))
     }
 
 }

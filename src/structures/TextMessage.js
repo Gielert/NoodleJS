@@ -51,21 +51,21 @@ class TextMessage {
 
         if (this.users.size) {
             packet.session = []
-            for (const session in this.users.array()) {
-                packet.session.push(Number(session))
+            for (const user of this.users.array()) {
+                packet.session.push(Number(user.session))
             }
         }
         if (this.channels.size) {
             packet.channelId = []
-            for (const id in this.channels.array()) {
-                packet.channelId.push(Number(id))
+            for (const channel of this.channels.array()) {
+                packet.channelId.push(Number(channel.id))
             }
         }
 
         if (this.trees.size) {
             packet.treeId = []
-            for (const id in this.trees.array()) {
-                packet.treeId.push(Number(id))
+            for (const channel of this.trees.array()) {
+                packet.treeId.push(Number(channel.id))
             }
         }
 
