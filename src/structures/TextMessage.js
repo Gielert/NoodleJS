@@ -45,7 +45,7 @@ class TextMessage {
     }
 
     reply(message) {
-        this.sender.sendMessage(message)
+        return this.sender.sendMessage(message)
     }
 
     toPacket() {

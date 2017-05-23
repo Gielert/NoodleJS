@@ -18,40 +18,23 @@ class Connection extends EventEmitter {
 
             this.socket.on('data', this._onReceiveData.bind(this))
         })
-
-        this.buffers = []
-        this.length = 0
-        this.readers = []
-
-        this._waitForPrefix()
-    }
-
-    _waitForPrefix() {
-        this.read(6, (data) => {
-            const type = data.readUInt16BE(0)
-            const length = data.readUInt32BE(2)
-
-            this.read(length, (data) => {
-                this._processData(type, data)
-                this._waitForPrefix()
-            })
-        })
-    }
-
-    read(length, callback) {
-        this.readers.push({ length: length, callback: callback });
-        if (this.readers.length === 1) { this._checkReader(); }
     }
 
     _onReceiveData(data) {
-        this.buffers.push(data)
-        this.length += data.length
-        this._checkReader()
+        while (data.length > 6) {
+            const type = data.readUInt16BE(0)
+            const length = data.readUInt32BE(2)
+            if (data.length < length + 6)
+                break
+            const buf = data.slice(6, length + 6)
+            data = data.slice(buf.length + 6)
+            this._processData(type, buf)
+        }
     }
 
     _processData(type, data) {
         if( this.protobuf.nameById(type) === 'UDPTunnel' ) {
-
+            //TODO handle voice packets
         } else {
             var msg = this.protobuf.decodePacket(type, data);
             this._processMessage(type, msg);
@@ -62,45 +45,11 @@ class Connection extends EventEmitter {
         this.emit(this.protobuf.nameById(type), msg);
     }
 
-    _checkReader() {
-        if (this.readers.length === 0) return
-
-        const reader = this.readers[0]
-
-        if (this.length < reader.length) return
-        const buffer = new Buffer(reader.length)
-        var written = 0
-
-        while(written < reader.length) {
-            var received = this.buffers[0];
-
-            var remaining = reader.length - written;
-            if (received.length <= remaining) {
-
-                received.copy(buffer, written);
-                written += received.length;
-
-                this.buffers.splice(0, 1);
-                this.length -= received.length;
-            } else {
-
-                received.copy(buffer, written, 0, remaining);
-                written += remaining;
-
-                this.buffers[0] = received.slice(remaining);
-                this.length -= remaining;
-            }
-        }
-
-        this.readers.splice(0, 1);
-        reader.callback(buffer);
-    }
-
     _writePacket(buffer) {
         this.socket.write(buffer)
     }
 
-    writeHeader(type, data) {
+    _writeHeader(type, data) {
         const header = new Buffer(6)
         header.writeUInt16BE(type, 0)
         header.writeUInt32BE(data, 2)
@@ -110,7 +59,7 @@ class Connection extends EventEmitter {
     writeProto(type, data) {
         try {
             const packet = this.protobuf.encodePacket(type, data)
-            this.writeHeader(this.protobuf.idByName(type), packet.length)
+            this._writeHeader(this.protobuf.idByName(type), packet.length)
             this._writePacket(packet)
             return Promise.resolve()
         } catch(e) {
