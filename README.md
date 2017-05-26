@@ -16,3 +16,29 @@
 </div>
 
 ## NoodleJS - A Mumble Client
+NoodleJS is a node.js module that allows you to interact with Mubmle servers very easily.
+This is a complete rewrite from the previous version of NoodleJS.
+
+### Installation
+**Node.js >= 6.0.0 is required.**
+
+#### Audio
+Audio is currently not implemented. I'm working on this as hard as I can :D
+
+## Example usage
+```js
+const NoodleJS = require('noodle.js');
+const client = new NoodleJS({
+    url: 'myawesomemumbleserver'
+});
+
+client.on('ready' info => {
+    console.log(info.welcomeMessage)
+});
+
+client.on('message', message => {
+    if (message.content === 'ping') {
+        message.reply('pong');
+    }
+});
+```

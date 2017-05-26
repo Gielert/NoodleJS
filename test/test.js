@@ -25,8 +25,8 @@ client.on('userChange', (oldUser, newUser) => {
 
 client.on('channelRemove', channelId => console.log(channelId))
 
-client.on('textMessage', textMessage => {
-    textMessage.reply("oke")
+client.on('message', message => {
+    message.reply("oke")
         .then(message => console.log(message))
 })
 
