@@ -1,32 +1,44 @@
-# NoodleJS - A NodeJS Mumble client
-NoodleJS is in a very early stage of development. So don't expect much of it.
-This client is based on Node-Mumble, but with the sort-like implementation of Gumble. I felt that Node-Mumble wasn't satisfying my needs so I decided to create my own client. The purpose of this client is most likely for creating bots.
+<div align="center">
+    <p>
+        <img width="400px" src="http://i.imgur.com/qCjY5JI.png"/>
+    </p>
+    <br>
+    <p>
+        <a href="https://www.npmjs.com/package/noodle.js" title="dependencies status"><img src="https://img.shields.io/npm/v/noodle.js.svg"/></a>
+        <a href="https://www.npmjs.com/package/noodle.js" title="dependencies status"><img src="https://img.shields.io/npm/dt/noodle.js.svg"/></a>
+        <a href="https://david-dm.org/Gielert/NoodleJS" title="dependencies status"><img src="https://david-dm.org/Gielert/NoodleJS/status.svg"/></a>
+    </p>
+    <p>
+        <a href="https://www.npmjs.com/package/noodle.js">
+        <img src="https://nodei.co/npm/noodle.js.png?downloads=true&stars=true">
+        </a>
+    </p>
+</div>
 
-Feel free to checkout both repositories as they are both great to use!
-* [Node-Mumble](https://github.com/Rantanen/node-mumble)
-* [Gumble](https://github.com/layeh/gumble)
+## NoodleJS - A Mumble Client
+NoodleJS is a node.js module that allows you to interact with Mubmle servers very easily.
+This is a complete rewrite from the previous version of NoodleJS.
 
-## So whats working
-* Receiving text messages
-* Sending a message to a user
-* Sending a message to a channel
-* Handling user events
-* Handling channel events
-* Handling client connect event
-* Playing audio from the client
-* Setting volume of the client
+### Installation
+**Node.js >= 6.0.0 is required.**
 
-## Basic setup
-```javascript
-var NoodleJS = require('noodle-js');
+#### Audio
+Audio is currently not implemented. I'm working on this as hard as I can :D
 
-var client = NoodleJS.newClient({
-    url: 'mymumbleserver.domain',
-    name: 'NoodleJS'
+## Example usage
+```js
+const NoodleJS = require('noodle.js');
+const client = new NoodleJS({
+    url: 'myawesomemumbleserver'
+});
+
+client.on('ready' info => {
+    console.log(info.welcomeMessage)
+});
+
+client.on('message', message => {
+    if (message.content === 'ping') {
+        message.reply('pong');
+    }
 });
 ```
-
-## More info
-For more info check the [wiki](https://github.com/Gielert/NoodleJS/wiki)
-
-For a full example check the examples in the repository.
