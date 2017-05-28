@@ -16,7 +16,7 @@
 </div>
 
 ## NoodleJS - A Mumble Client
-NoodleJS is a node.js module that allows you to interact with Mubmle servers very easily.
+NoodleJS is a node.js module that allows you to interact with Mumble servers very easily.
 This is a complete rewrite from the previous version of NoodleJS.
 
 ### Installation

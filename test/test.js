@@ -1,4 +1,5 @@
 const Client = require('../src/Client')
+const ytdl = require('ytdl-core')
 
 const client = new Client();
 
@@ -9,6 +10,9 @@ client.on('ready', data => {
     client.sendMessage('Damn this works well')
         .then(message => console.log(message))
         .catch(err => console.log(err))
+
+    const stream = ytdl('https://www.youtube.com/watch?v=OpIQNxiKJoE')
+    client.voiceConnection.playStream(stream)
 })
 
 client.on('channelUpdate', (oldChannel, newChannel) => {

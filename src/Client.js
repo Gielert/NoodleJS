@@ -8,6 +8,7 @@ const ChannelState = require('./handlers/ChannelState')
 const ChannelRemove = require('./handlers/ChannelRemove')
 const TextMessage = require('./handlers/TextMessage')
 const Collection = require('./structures/Collection')
+const Dispatcher = require('./voice/Dispatcher')
 
 class Client extends EventEmitter {
     constructor(options = {}) {
@@ -24,7 +25,7 @@ class Client extends EventEmitter {
                 os_version: process.version
             })
             this.connection.writeProto('Authenticate', {
-                username: 'NoodleJS',
+                username: options.name || 'NoodleJS',
                 password: options.password || '',
                 opus: true,
                 tokens: options.tokens || []
@@ -34,6 +35,8 @@ class Client extends EventEmitter {
 
         this.channels = new Collection()
         this.users = new Collection()
+
+        this.voiceConnection = new Dispatcher(this.connection)
 
         const serverSync = new ServerSync(this)
         const userState = new UserState(this)

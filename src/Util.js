@@ -1,3 +1,5 @@
+const Constants = require('./Constants')
+
 class Util {
 
     static toVarint(i) {
@@ -49,6 +51,24 @@ class Util {
 
     static cloneObject(obj) {
         return Object.assign(Object.create(obj), obj);
+    }
+
+    static adjustNetworkBandwidth(bitspersec) {
+        let frames = Constants.Network.framesPerPacket
+        let bitrate = Constants.Network.quality
+
+        if(this.getNetworkBandwidth(bitrate, frames) > bitspersec) {
+            while(bitrate > 8000 && (this.getNetworkBandwidth(bitrate, frames) > bitspersec)) {
+                bitrate -= 1000
+            }
+        }
+        return bitrate
+    }
+
+    static getNetworkBandwidth(bitrate, frames) {
+        let overhead = 20 + 8 + 4 + 1 + 2 + frames + 12
+        overhead *= (800 / frames)
+        return overhead + bitrate
     }
 }
 
