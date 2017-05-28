@@ -7,10 +7,8 @@ class DispatchStream extends WritableStream {
         super()
         this.connection = connection
         this.processObserver = new EventEmitter()
-        this.processInterval = setInterval(
-            this._processAudioBuffer.bind(this),
-            Constants.Audio.frameLength
-        )
+
+        this.open()
 
         this.frameQueue = []
         this.lastFrame = this._createFrameBuffer()
@@ -20,8 +18,21 @@ class DispatchStream extends WritableStream {
         this.lastWrite = null
     }
 
+    open() {
+        if(this.processInterval) return
+        this.processInterval = setInterval(
+            this._processAudioBuffer.bind(this),
+            Constants.Audio.frameLength
+        )
+    }
+
     close() {
-        clearInterval(this.processInterval)
+        if(this.processInterval) clearInterval(this.processInterval)
+        this.processInterval = null
+        this.frameQueue = []
+        this.lastFrame = this._createFrameBuffer()
+        this.lastFrameWritten = 0
+        this.lastWrite = null
     }
 
     _createFrameBuffer() {

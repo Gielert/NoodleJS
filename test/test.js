@@ -1,7 +1,7 @@
 const Client = require('../src/Client')
 const ytdl = require('ytdl-core')
 
-const client = new Client({name: 'MusicBot', url: 'baarders.nl'});
+const client = new Client();
 
 client.on('ready', data => {
     console.log(client.users)
@@ -11,8 +11,10 @@ client.on('ready', data => {
         .then(message => console.log(message))
         .catch(err => console.log(err))
 
-    let stream = ytdl('https://www.youtube.com/watch?v=OpIQNxiKJoE')
+    const stream = ytdl('https://www.youtube.com/watch?v=OpIQNxiKJoE')
     client.voiceConnection.playStream(stream)
+    client.voiceConnection.stop()
+    // client.voiceConnection.playFile('C:\\Users\\Michiel\\Music\\Producings\\Baslooploop.mp3')
 })
 
 client.on('channelUpdate', (oldChannel, newChannel) => {

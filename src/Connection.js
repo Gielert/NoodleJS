@@ -95,27 +95,34 @@ class Connection extends EventEmitter {
         if (typeof voiceSequence !== 'number')
             voiceSequence = this.voiceSequence
 
-        const packetLength = packet.length
-        const lengthVarint = Util.toVarint(packetLength)
         const sequenceVarint = Util.toVarint(voiceSequence)
 
-        const header = new Buffer(1 + sequenceVarint.length + lengthVarint.length)
-        header[0] = typeTarget
-        sequenceVarint.value.copy(header, 1, 0)
-        lengthVarint.value.copy(header, 1 + sequenceVarint.length, 0)
+        const voiceHeader = new Buffer(1 + sequenceVarint.length)
+        voiceHeader[0] = typeTarget
+        sequenceVarint.value.copy(voiceHeader, 1, 0)
+        let header
 
         if (codec == Connection.codec().Opus) {
             if (packet.length > 0x1FFF)
                 throw new TypeError(`Audio frame too long! Max Opus length is ${0x1FFF} bytes.`)
+
+            const headerValue = packet.length
+            const headerVarint = Util.toVarint(headerValue)
+            header = headerVarint.value
         } else {
             throw new TypeError('Celt is not supported')
         }
 
+        const frame = new Buffer(header.length + packet.length)
+        header.copy(frame, 0)
+
+        packet.copy(frame, header.length)
+
         voiceSequence++
 
-        this._writeHeader(this.protobuf.idByName('UDPTunnel'), header.length + packetLength)
-        this._writePacket(header)
-        this._writePacket(packet)
+        this._writeHeader(this.protobuf.idByName('UDPTunnel'), voiceHeader.length + frame.length)
+        this._writePacket(voiceHeader)
+        this._writePacket(frame)
 
         if (voiceSequence > this.voiceSequence)
             this.voiceSequence = voiceSequence

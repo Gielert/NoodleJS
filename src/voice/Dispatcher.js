@@ -7,22 +7,15 @@ class Dispatcher {
     }
 
     playFile(filename) {
-        const command = ffmpeg(filename)
-            .output(this.dispatchStream)
-            .audioFrequency(48000)
-            .audioChannels(1)
-            .format('s16le')
-            .on('error', function(e) {
-                console.error(e)
-            })
-            .on('end', () => {
-                console.log("cs")
-            })
-            .run()
+        this.play(filename)
     }
 
     playStream(stream) {
-        const command = ffmpeg(stream)
+        this.play(stream)
+    }
+
+    play(unknown) {
+        this.command = ffmpeg(unknown)
             .output(this.dispatchStream)
             .audioFrequency(48000)
             .audioChannels(1)
@@ -30,7 +23,12 @@ class Dispatcher {
             .on('error', function(e) {
                 console.error(e)
             })
-            .run()
+        this.command.run()
+    }
+
+    stop() {
+        if (this.command)
+            this.command.kill()
     }
 }
 

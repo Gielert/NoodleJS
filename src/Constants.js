@@ -5,3 +5,8 @@ exports.Audio = {
     frameSize: 480,
     frameLength: 10
 }
+
+exports.Network = {
+    framesPerPacket: 1,
+    quality: 40000
+}
