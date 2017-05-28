@@ -6,7 +6,7 @@
     <p>
         <a href="https://www.npmjs.com/package/noodle.js" title="dependencies status"><img src="https://img.shields.io/npm/v/noodle.js.svg"/></a>
         <a href="https://www.npmjs.com/package/noodle.js" title="dependencies status"><img src="https://img.shields.io/npm/dt/noodle.js.svg"/></a>
-        <a href="https://david-dm.org/Gielert/NoodleJS" title="dependencies status"><img src="https://david-dm.org/Gielert/NoodleJS/status.svg"/></a>
+        <a href="https://david-dm.org/Gielert/NoodleJS" title="dependencies status"><img src="https://img.shields.io/david/gielert/noodlejs.svg"/></a>
     </p>
     <p>
         <a href="https://www.npmjs.com/package/noodle.js">
@@ -23,7 +23,17 @@ This is a complete rewrite from the previous version of NoodleJS.
 **Node.js >= 6.0.0 is required.**
 
 #### Audio
-Audio is currently not implemented. I'm working on this as hard as I can :D
+You can send audio in two ways.
+```js
+const NoodleJS = require('noodle.js');
+const client = new NoodleJS();
+
+client.on('ready' () => {
+    client.voiceConnection.playFile('pathtofile')
+    // or
+    client.voiceConnection.playStream(somestream)
+});
+```
 
 ## Example usage
 ```js
