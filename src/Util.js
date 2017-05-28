@@ -45,8 +45,8 @@ class Util {
 
     static encodeVersion(major, minor, patch) {
         return  ((major & 0xffff) << 16) |
-                ((minor & 0xff) << 8) |
-                (patch & 0xff)
+        ((minor & 0xff) << 8) |
+        (patch & 0xff)
     }
 
     static cloneObject(obj) {
@@ -62,6 +62,7 @@ class Util {
                 bitrate -= 1000
             }
         }
+        
         return bitrate
     }
 
@@ -69,6 +70,26 @@ class Util {
         let overhead = 20 + 8 + 4 + 1 + 2 + frames + 12
         overhead *= (800 / frames)
         return overhead + bitrate
+    }
+
+    /**
+    * Sets default properties on an object that aren't already specified.
+    * @param {Object} def Default properties
+    * @param {Object} given Object to assign defaults to
+    * @returns {Object}
+    * @private
+    */
+    static mergeDefault(def, given) {
+        if (!given) return def;
+        for (const key in def) {
+            if (!{}.hasOwnProperty.call(given, key)) {
+                given[key] = def[key];
+            } else if (given[key] === Object(given[key])) {
+                given[key] = this.mergeDefault(def[key], given[key]);
+            }
+        }
+
+        return given;
     }
 }
 

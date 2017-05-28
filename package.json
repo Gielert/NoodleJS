@@ -1,6 +1,6 @@
 {
   "name": "noodle.js",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "homepage": "https://github.com/Gielert/NoodleJS",
   "bugs": "https://github.com/Gielert/NoodleJS/issues",
   "repository": {
@@ -26,5 +26,9 @@
     "fluent-ffmpeg": "^2.0.1",
     "node-opus": "^0.2.6",
     "protobufjs": "^6.7.3"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "jsdoc-to-markdown": "^3.0.0"
   }
 }
