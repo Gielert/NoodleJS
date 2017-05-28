@@ -13,8 +13,6 @@ client.on('ready', data => {
 
     const stream = ytdl('https://www.youtube.com/watch?v=OpIQNxiKJoE')
     client.voiceConnection.playStream(stream)
-    client.voiceConnection.stop()
-    // client.voiceConnection.playFile('C:\\Users\\Michiel\\Music\\Producings\\Baslooploop.mp3')
 })
 
 client.on('channelUpdate', (oldChannel, newChannel) => {
