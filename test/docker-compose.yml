@@ -3,4 +3,4 @@ services:
   database:
     image: coppit/mumble-server
     expose:
-    - "64738"
+    - "64738/tcp"
