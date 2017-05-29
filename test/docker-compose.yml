@@ -1,0 +1,6 @@
+version: '2.1'
+services:
+  database:
+    image: coppit/mumble-server
+    expose:
+    - "64738"
