@@ -21,7 +21,7 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - docker-compose -f ./test/docker-compose.yml up -d
-  - sleep 10
+  - sleep 60
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

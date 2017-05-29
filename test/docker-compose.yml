@@ -2,7 +2,5 @@ version: '2.1'
 services:
   mumble:
     image: coppit/mumble-server
-    expose:
-    - "64738"
     ports:
     - "64738:64738"
