@@ -5,6 +5,9 @@
     <br>
     <p>
         <a href="https://www.npmjs.com/package/noodle.js" title="dependencies status"><img src="https://img.shields.io/npm/v/noodle.js.svg"/></a>
+        <a href="https://travis-ci.org/Gielert/NoodleJS">
+        <img src="https://travis-ci.org/Gielert/NoodleJS.svg?branch=master"/>
+        </a>
         <a href="https://www.npmjs.com/package/noodle.js" title="dependencies status"><img src="https://img.shields.io/npm/dt/noodle.js.svg"/></a>
         <a href="https://david-dm.org/Gielert/NoodleJS" title="dependencies status"><img src="https://img.shields.io/david/gielert/noodlejs.svg"/></a>
     </p>
