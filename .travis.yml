@@ -10,8 +10,10 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - jon-severinsson-ffmpeg
     packages:
       - g++-4.8
+      - ffmpeg
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
