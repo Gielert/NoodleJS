@@ -3,17 +3,23 @@ const Util = require('../Util')
 
 class ServerSync extends AbstractHandler {
     handle(data) {
-        let event = {}
+        let info = {}
         this.client.user = this.client.users.get(data.session)
-        event.welcomeMessage = data.welcomeText
-        event.maximumBitrate = data.maxBandwidth
+        info.welcomeMessage = data.welcomeText
+        info.maximumBitrate = data.maxBandwidth
         if (data.maxBandwidth != null) {
             const bitrate = Util.adjustNetworkBandwidth(data.maxBandwidth)
             this.client.connection.opusEncoder.setBitrate(bitrate)
         }
 
         this.client.synced = true
-        this.client.emit('ready', event)
+        
+        /**
+         * Emitted when the client is connected and ready
+         * @event Client#ready
+         * @param {ServerInfo} info The information from the server
+         */
+        this.client.emit('ready', info)
     }
 }
 

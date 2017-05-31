@@ -13,9 +13,7 @@ class Connection extends EventEmitter {
 
         new Protobuf().then((protobuf) => {
             this.protobuf = protobuf
-            this.socket = tls.connect(options.port, options.url, {
-                rejectUnauthorized: options.rejectUnauthorized
-            }, error => {
+            this.socket = tls.connect(options.port, options.url, options, error => {
                 if (error) return this.emit('error', error)
                 this.emit('connected')
             })

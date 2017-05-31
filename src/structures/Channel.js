@@ -3,8 +3,15 @@ const TextMessage = require('./TextMessage')
 const Util = require('../Util')
 const Promise = require('bluebird')
 
+/**
+ * Represents a channel on Mumble
+ */
 class Channel {
 
+    /**
+     * @param  {Client} client The client that instantiated the channel
+     * @param  {ChannelData} data Information about the channel
+     */
     constructor(client, data) {
         Object.defineProperty(this, 'client', {value: client})
 
