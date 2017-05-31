@@ -1,4 +1,5 @@
 const chai = require('chai')
+const fs = require('fs')
 const expect = chai.expect
 const Client = require('../src/Client')
 let client = null
@@ -11,6 +12,15 @@ before((done) => {
     client.on('ready', () => {
         client2 = new Client({name: 'bob', url})
         client2.on('ready', () => {
+            done()
+        })
+    })
+})
+
+describe('Connection', () => {
+    it('should error when it can\'t connect', (done) => {
+        const shouldError = new Client({url: 'somenonexistingurl'})
+        shouldError.on('error', () => {
             done()
         })
     })
@@ -51,7 +61,7 @@ describe('TextMessage', () => {
     })
 
     it('should reply to a textmessage from a user', (done) => {
-        client.on('message', (message) => {
+        client.once('message', (message) => {
             message.reply('okay').then((reply) => {
                 const user = reply.users.find('name', 'bob')
                 expect(user.name).to.equal('bob')
@@ -82,5 +92,44 @@ describe('User', () => {
     it('should find a specific user', () => {
         const user = client.users.find('name', 'bob')
         expect(user.name).to.equal('bob')
+    })
+
+    it('should receive an event when a user changes', done => {
+        client.once('userChange', (oldUser, newUser) => {
+            expect(newUser.selfMute).to.be.true
+            done()
+        })
+        client2.mute()
+    })
+
+    it('should receive an event when a user disconnects', done => {
+        client.once('userDisconnect', user => {
+            expect(user.name).to.equal('bob')
+            done()
+        })
+        client2.destroy()
+    })
+})
+
+describe('Audio', () => {
+    it('should play a file', done => {
+        client.voiceConnection.playFile('test/test.mp3')
+        return client.voiceConnection.once('end', () => {
+            done()
+        })
+    })
+
+    it('should play a stream', done => {
+        client.voiceConnection.playStream(fs.createReadStream('test/test.mp3'))
+        return client.voiceConnection.once('end', () => {
+            done()
+        })
+    })
+
+    it('should error when playing a non existing file', done => {
+        client.voiceConnection.playFile('nope.mp3')
+        return client.voiceConnection.once('error', () => {
+            done()
+        })
     })
 })
