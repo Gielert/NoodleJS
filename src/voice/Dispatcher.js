@@ -1,9 +1,12 @@
+const EventEmitter = require('events').EventEmitter
 const DispatchStream = require('./DispatchStream')
 const ffmpeg = require('fluent-ffmpeg')
 
-class Dispatcher {
-    constructor(connection) {
-        this.dispatchStream = new DispatchStream(connection)
+class Dispatcher extends EventEmitter {
+    constructor(client) {
+        super()
+        this.client = client
+        this.connection = this.client.connection
     }
 
     playFile(filename) {
@@ -15,13 +18,17 @@ class Dispatcher {
     }
 
     play(unknown) {
+        const dispatchStream = new DispatchStream(this.connection)
+        dispatchStream.once('finish', () => {
+            this.emit('end')
+        })
         this.command = ffmpeg(unknown)
-            .output(this.dispatchStream)
+            .output(dispatchStream)
             .audioFrequency(48000)
             .audioChannels(1)
             .format('s16le')
-            .on('error', function(e) {
-                console.error(e)
+            .on('error', (e) => {
+                this.emit('error', e)
             })
         this.command.run()
     }

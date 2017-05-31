@@ -1,4 +1,5 @@
 const EventEmitter = require('events').EventEmitter
+const Promise = require('bluebird')
 const Connection = require('./Connection')
 const Util = require('./Util')
 const Constants = require('./Constants')
@@ -35,6 +36,9 @@ class Client extends EventEmitter {
          * @private
          */
         this.connection = new Connection(this.options)
+        this.connection.on('error', (error) => {
+            this.emit('error', error)
+        })
 
         this.connection.on('connected', () => {
             this.connection.writeProto('Version', {
@@ -70,7 +74,7 @@ class Client extends EventEmitter {
          * The {@link Dispatcher} for the voiceConnection
          * @type {Dispatcher}
          */
-        this.voiceConnection = new Dispatcher(this.connection)
+        this.voiceConnection = new Dispatcher(this)
 
         const serverSync = new ServerSync(this)
         const userState = new UserState(this)
@@ -107,6 +111,20 @@ class Client extends EventEmitter {
      */
     sendMessage(message, recursive) {
         return this.user.channel.sendMessage(message, recursive)
+    }
+
+    mute() {
+        this.connection.writeProto('UserState', {session: this.user.session, actor: this.user.session , selfMute: true})
+    }
+
+    destroy() {
+        try {
+            clearInterval(this.ping)
+            this.connection.close()
+            return Promise.resolve()
+        } catch(e) {
+            return Promise.reject(e)
+        }
     }
 
 }

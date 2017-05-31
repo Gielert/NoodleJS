@@ -13,11 +13,12 @@ class Connection extends EventEmitter {
 
         new Protobuf().then((protobuf) => {
             this.protobuf = protobuf
-            this.socket = tls.connect(options.port, options.url, options, error => {
-                if (error) return this.emit('error', error)
+            this.socket = tls.connect(options.port, options.url, options, () => {
                 this.emit('connected')
             })
-
+            this.socket.on('error', error => {
+                this.emit('error', error)
+            })
             this.socket.on('data', this._onReceiveData.bind(this))
         })
 
@@ -26,6 +27,10 @@ class Connection extends EventEmitter {
         this.codec = Connection.codec().Opus
         this.voiceSequence = 0
 
+    }
+
+    close() {
+        this.socket.end()
     }
 
     static codec() {
