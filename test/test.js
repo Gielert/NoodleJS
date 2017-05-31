@@ -4,10 +4,12 @@ const Client = require('../src/Client')
 let client = null
 let client2 = null
 
+const url = process.env.MUMBLE_URL
+
 before((done) => {
-    client = new Client()
+    client = new Client({url})
     client.on('ready', () => {
-        client2 = new Client({name: 'bob'})
+        client2 = new Client({name: 'bob', url})
         client2.on('ready', () => {
             done()
         })
