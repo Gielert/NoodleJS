@@ -2,6 +2,8 @@ const chai = require('chai')
 const fs = require('fs')
 const expect = chai.expect
 const Client = require('../src/Client')
+const Channel = require('../src/structures/Channel')
+const ChannelRemove = require('../src/handlers/ChannelRemove')
 let client = null
 let client2 = null
 
@@ -9,8 +11,10 @@ const url = process.env.MUMBLE_URL
 
 before((done) => {
     client = new Client({url})
+    client.connect()
     client.on('ready', () => {
         client2 = new Client({name: 'bob', url})
+        client2.connect()
         client2.on('ready', () => {
             done()
         })
@@ -20,6 +24,7 @@ before((done) => {
 describe('Connection', () => {
     it('should error when it can\'t connect', (done) => {
         const shouldError = new Client({url: 'somenonexistingurl'})
+        shouldError.connect()
         shouldError.on('error', () => {
             done()
         })
@@ -81,6 +86,78 @@ describe('Channel', () => {
     it('should find a specific channel', () => {
         const channel = client.channels.find('name', 'Root')
         expect(channel.name).to.equal('Root')
+    })
+
+    // This is a mocked test. ACL isn't implemented yet.
+    it('should update a channel', () => {
+        const fclient = new Client()
+
+        const rootChannel = new Channel(fclient, {
+            channelId: 0,
+            name: 'Root',
+            position: 0
+        })
+
+        fclient.channels.set(rootChannel.id, rootChannel)
+
+        const channel = new Channel(fclient, {
+            channelId: 1,
+            name: 'fake channel',
+            description: "some description",
+            position: 1,
+            temporary: true,
+            links: [0]
+        })
+
+        const channelTwo = new Channel(fclient, {
+            channelId: 2,
+            name: 'fake channel two',
+            position: 2
+        })
+
+        fclient.channels.set(channelTwo.id, channelTwo)
+        fclient.channels.set(channel.id, channel)
+
+        channel.setup({
+            channelId: 1,
+            name: "new fake name",
+            parent: 0,
+            linksRemove: [0]
+        })
+
+        expect(channel.parent.id).to.equal(rootChannel.id)
+
+        channel.setup({
+            channelId: 1,
+            linksAdd: [0],
+            parent: 2
+        })
+
+        expect(channel.parent.id).to.equal(channelTwo.id)
+
+    })
+
+    it('should not update a channel when channelId is missing', () => {
+        const channel = new Channel(null, {
+            channelId: 1,
+            name: 'fake channel'
+        })
+
+        channel.setup({
+            name: 'new fake name'
+        })
+
+        expect(channel.name).to.equal('fake channel')
+    })
+
+    it('should handle channel remove', () => {
+        const fclient = new Client()
+        fclient.synced = true
+        const channelRemove = new ChannelRemove(fclient);
+        const channel = new Channel(fclient, {channelId: 0, name: 'test'})
+        fclient.channels.set(channel.id, channel)
+        channelRemove.handle({channelId: 0})
+        expect(fclient.channels.size).to.equal(0)
     })
 })
 

@@ -34,11 +34,13 @@ You can send audio in two ways.
 const NoodleJS = require('noodle.js');
 const client = new NoodleJS();
 
-client.on('ready' () => {
-    client.voiceConnection.playFile('pathtofile')
+client.on('ready', () => {
+    client.voiceConnection.playFile('pathtofile');
     // or
-    client.voiceConnection.playStream(somestream)
+    client.voiceConnection.playStream(somestream);
 });
+
+client.connect();
 ```
 
 ## Example usage
@@ -48,8 +50,8 @@ const client = new NoodleJS({
     url: 'myawesomemumbleserver'
 });
 
-client.on('ready' info => {
-    console.log(info.welcomeMessage)
+client.on('ready', info => {
+    console.log(info.welcomeMessage);
 });
 
 client.on('message', message => {
@@ -57,4 +59,6 @@ client.on('message', message => {
         message.reply('pong');
     }
 });
+
+client.connect();
 ```

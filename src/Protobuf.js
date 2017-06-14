@@ -1,5 +1,4 @@
 const protobufjs = require('protobufjs')
-const fs = require('fs')
 const path = require('path')
 const Messages = require('./Messages')
 const Promise = require('bluebird')
@@ -11,7 +10,7 @@ class Protobuf {
                 this.mumble = root
                 return Promise.resolve(this)
             }).catch((err) => {
-                throw new Error('Something went wrong loading the protobuf file!')
+                throw new Error(err)
             })
     }
 

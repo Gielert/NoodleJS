@@ -3,7 +3,6 @@ const Constants = require('./Constants')
 class Util {
 
     static toVarint(i) {
-        var absValue = Math.abs( i );
 
         var arr = [];
         if( i < 0 ) {
@@ -62,7 +61,7 @@ class Util {
                 bitrate -= 1000
             }
         }
-        
+
         return bitrate
     }
 

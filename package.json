@@ -1,6 +1,6 @@
 {
   "name": "noodle.js",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "homepage": "https://github.com/Gielert/NoodleJS",
   "bugs": "https://github.com/Gielert/NoodleJS/issues",
   "repository": {
@@ -13,7 +13,8 @@
   "description": "A NodeJS mumble client",
   "main": "src/Client.js",
   "scripts": {
-    "test": "istanbul cover _mocha --"
+    "test": "istanbul cover _mocha --",
+    "lint": "eslint src || true"
   },
   "keywords": [
     "NodeJS",
