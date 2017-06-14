@@ -1,4 +1,3 @@
-const Util = require('../Util')
 const Collection = require('./Collection')
 
 class TextMessage {

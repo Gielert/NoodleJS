@@ -1,6 +1,5 @@
 const Collection = require('./Collection')
 const TextMessage = require('./TextMessage')
-const Util = require('../Util')
 const Promise = require('bluebird')
 
 /**
@@ -50,7 +49,7 @@ class Channel {
                     this.links.set(channel.id, channel)
             })
 
-        if (this.description != null)
+        if (data.description != null)
             this.description = data.description
 
         if (data.linksAdd != null)
@@ -67,10 +66,10 @@ class Channel {
                     this.links.delete(channel.id)
             })
 
-        if (this.temporary != null)
+        if (data.temporary != null)
             this.temporary = data.temporary
 
-        if (this.position != null)
+        if (data.position != null)
             this.position = data.position
     }
 

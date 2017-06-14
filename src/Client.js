@@ -102,6 +102,10 @@ class Client extends EventEmitter {
         }, 15000)
     }
 
+    connect() {
+        this.connection.connect()
+    }
+
     /**
      * Sends a message to the {@link Channel} where the client is currently
      * connected

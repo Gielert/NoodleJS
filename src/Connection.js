@@ -5,15 +5,23 @@ const EventEmitter = require('events').EventEmitter
 const OpusEncoder = require('node-opus').OpusEncoder
 const Constants = require('./Constants')
 const Util = require('./Util')
-const DispatchStream = require('./voice/DispatchStream')
 
 class Connection extends EventEmitter {
     constructor(options) {
         super()
 
+        this.options = options;
+        this.opusEncoder = new OpusEncoder(Constants.sampleRate)
+        this.currentEncoder = this.opusEncoder
+        this.codec = Connection.codec().Opus
+        this.voiceSequence = 0
+
+    }
+
+    connect() {
         new Protobuf().then((protobuf) => {
             this.protobuf = protobuf
-            this.socket = tls.connect(options.port, options.url, options, () => {
+            this.socket = tls.connect(this.options.port, this.options.url, this.options, () => {
                 this.emit('connected')
             })
             this.socket.on('error', error => {
@@ -21,12 +29,6 @@ class Connection extends EventEmitter {
             })
             this.socket.on('data', this._onReceiveData.bind(this))
         })
-
-        this.opusEncoder = new OpusEncoder(Constants.sampleRate)
-        this.currentEncoder = this.opusEncoder
-        this.codec = Connection.codec().Opus
-        this.voiceSequence = 0
-
     }
 
     close() {
@@ -109,7 +111,11 @@ class Connection extends EventEmitter {
             if (packet.length > 0x1FFF)
                 throw new TypeError(`Audio frame too long! Max Opus length is ${0x1FFF} bytes.`)
 
-            const headerValue = packet.length
+            let headerValue = packet.length
+
+            if (final)
+                headerValue += (1 << 7)
+
             const headerVarint = Util.toVarint(headerValue)
             header = headerVarint.value
         } else {

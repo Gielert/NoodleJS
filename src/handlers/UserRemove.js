@@ -1,6 +1,4 @@
 const AbstractHandler = require('./AbstractHandler')
-const Channel = require('../structures/Channel')
-const Util = require('../Util')
 
 class UserRemove extends AbstractHandler {
     handle(data) {
