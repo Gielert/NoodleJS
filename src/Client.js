@@ -121,6 +121,10 @@ class Client extends EventEmitter {
         this.connection.writeProto('UserState', {session: this.user.session, actor: this.user.session , selfMute: true})
     }
 
+    unmute() {
+        this.connection.writeProto('UserState', {session: this.user.session, actor: this.user.session, selfMute: false})
+    }
+
     destroy() {
         try {
             clearInterval(this.ping)
