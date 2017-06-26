@@ -174,6 +174,7 @@ describe('User', () => {
     it('should receive an event when a user changes', done => {
         client.once('userChange', (oldUser, newUser) => {
             expect(newUser.selfMute).to.be.true
+            client2.unmute()
             done()
         })
         client2.mute()
