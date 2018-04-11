@@ -18,12 +18,12 @@ class Dispatcher extends EventEmitter {
     }
 
     play(unknown) {
-        const dispatchStream = new DispatchStream(this.connection)
-        dispatchStream.once('finish', () => {
+        this.dispatchStream = new DispatchStream(this.connection)
+        this.dispatchStream.once('finish', () => {
             this.emit('end')
         })
         this.command = ffmpeg(unknown)
-            .output(dispatchStream)
+            .output(this.dispatchStream)
             .audioFrequency(48000)
             .audioChannels(1)
             .format('s16le')
@@ -31,6 +31,11 @@ class Dispatcher extends EventEmitter {
                 this.emit('error', e)
             })
         this.command.run()
+    }
+
+    stopStream() {
+        if(this.dispatchStream)
+            this.dispatchStream.close()
     }
 
     stop() {
