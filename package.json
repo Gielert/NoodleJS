@@ -13,7 +13,7 @@
   "description": "A NodeJS mumble client",
   "main": "src/Client.js",
   "scripts": {
-    "test": "istanbul cover _mocha --",
+    "test": "istanbul cover _mocha -- --exit",
     "lint": "eslint src || true"
   },
   "keywords": [
