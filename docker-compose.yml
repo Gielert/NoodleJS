@@ -1,0 +1,8 @@
+version: '2.1'
+services:
+  mumble-server:
+    image: phlak/mumble
+    ports:
+      - "64738:64738"
+    volumes:
+      - "./mumble-config:/data"
