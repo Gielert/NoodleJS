@@ -13,8 +13,6 @@ services:
   - docker
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install -o Dpkg::Options::="--force-confold" --force-yes -y docker-ce
   - docker-compose --version
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
@@ -33,6 +31,7 @@ addons:
     packages:
       - g++-4.8
       - ffmpeg
+      - docker-ce
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
