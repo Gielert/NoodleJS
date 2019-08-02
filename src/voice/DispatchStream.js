@@ -13,7 +13,7 @@ class DispatchStream extends WritableStream {
         this.frameQueue = []
         this.lastFrame = this._createFrameBuffer()
 
-        this.volume = 1
+        this._volume = 1
         this.lastFrameWritten = 0
         this.lastWrite = null
     }
@@ -35,8 +35,12 @@ class DispatchStream extends WritableStream {
         this.lastWrite = null
     }
 
-    setVolume(volume) {
-        this.volume = volume;
+    set volume(volume) {
+        this._volume = volume;
+    }
+
+    get volume() {
+        return this._volume
     }
 
     applyFrameVolume(frame, gain) {
@@ -60,10 +64,10 @@ class DispatchStream extends WritableStream {
 
        while (this.lastWrite + Constants.Audio.frameLength < Date.now()) {
            if (this.frameQueue.length > 0) {
-               const frame = this.frameQueue.shift()
+               let frame = this.frameQueue.shift()
 
-                if(this.volume !== 1) {
-                    frame = this.applyFrameVolume(frame, this.volume);
+                if(this._volume !== 1) {
+                    frame = this.applyFrameVolume(frame, this._volume);
                 }
 
                if (this.frameQueue.length < 1)  {

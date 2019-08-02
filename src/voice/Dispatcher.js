@@ -34,7 +34,11 @@ class Dispatcher extends EventEmitter {
     }
 
     setVolume(volume) {
-        this.dispatchStream.setVolume(volume)
+        this.dispatchStream.volume = volume
+    }
+
+    getVolume() {
+        return this.dispatchStream.volume
     }
 
     stopStream() {
