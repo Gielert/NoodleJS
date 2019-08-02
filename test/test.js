@@ -210,4 +210,12 @@ describe('Audio', () => {
             done()
         })
     })
+
+    it('should adjust the volume', done => {
+        client.voiceConnection.playFile('test/test.mp3')
+        client.voiceConnection.setVolume(0.3)
+        return client.voiceConnection.once('end', () => {
+            done()
+        })
+    })
 })
