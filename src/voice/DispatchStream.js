@@ -35,6 +35,17 @@ class DispatchStream extends WritableStream {
         this.lastWrite = null
     }
 
+    setVolume(volume) {
+        this.volume = volume;
+    }
+
+    applyFrameVolume(frame, gain) {
+        for(var i = 0; i < frame.length; i += 2) {
+            frame.writeInt16LE(Math.floor(frame.readInt16LE(i) * gain), i);
+        }
+        return frame;
+    }
+
     _createFrameBuffer() {
         return new Buffer(Constants.Audio.frameSize * 2)
     }
@@ -50,6 +61,10 @@ class DispatchStream extends WritableStream {
        while (this.lastWrite + Constants.Audio.frameLength < Date.now()) {
            if (this.frameQueue.length > 0) {
                const frame = this.frameQueue.shift()
+
+                if(this.volume !== 1) {
+                    frame = this.applyFrameVolume(frame, this.volume);
+                }
 
                if (this.frameQueue.length < 1)  {
                    this.voiceSequence += this.connection.writeAudio(
