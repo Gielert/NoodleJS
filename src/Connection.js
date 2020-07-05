@@ -2,7 +2,7 @@ const tls = require('tls');
 const Protobuf = require('./Protobuf')
 const Promise = require('bluebird')
 const EventEmitter = require('events').EventEmitter
-const OpusEncoder = require('node-opus').OpusEncoder
+const OpusEncoder = require('@discordjs/opus').OpusEncoder
 const Constants = require('./Constants')
 const Util = require('./Util')
 
@@ -11,7 +11,7 @@ class Connection extends EventEmitter {
         super()
 
         this.options = options;
-        this.opusEncoder = new OpusEncoder(Constants.sampleRate)
+        this.opusEncoder = new OpusEncoder(Constants.sampleRate, 1)
         this.currentEncoder = this.opusEncoder
         this.codec = Connection.codec().Opus
         this.voiceSequence = 0
