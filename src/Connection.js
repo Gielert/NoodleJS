@@ -11,7 +11,7 @@ class Connection extends EventEmitter {
         super()
 
         this.options = options;
-        this.opusEncoder = new OpusEncoder(Constants.sampleRate, 1)
+        this.opusEncoder = new OpusEncoder(Constants.Audio.sampleRate, 1)
         this.currentEncoder = this.opusEncoder
         this.codec = Connection.codec().Opus
         this.voiceSequence = 0
