@@ -23,16 +23,16 @@
   "author": "Michiel",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.1",
-    "fluent-ffmpeg": "^2.1.2",
     "@discordjs/opus": "^0.3.2",
-    "protobufjs": "^6.8.6"
+    "bluebird": "^3.7.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "protobufjs": "^6.9.0"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "gulp": "^3.9.1",
-    "istanbul": "^0.4.5",
-    "jsdoc-to-markdown": "^4.0.1",
-    "mocha": "^5.1.1"
+    "chai": "^4.2.0",
+    "gulp": "^4.0.2",
+    "nyc": "^15.1.0",
+    "jsdoc-to-markdown": "^6.0.1",
+    "mocha": "^8.0.1"
   }
 }
