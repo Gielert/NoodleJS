@@ -120,7 +120,7 @@ class Client extends EventEmitter {
     /**
      * Switches to another channel
      * @param  {Number} id         The id of the channel to switch to
-     * @return {Promise<>}
+     * @return {Promise<any>}
      */
     switchChannel(id) {
         if (this.channels.has(id)) {
