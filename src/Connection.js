@@ -55,8 +55,8 @@ class Connection extends EventEmitter {
     }
 
     _processData(type, data) {
-        if( this.protobuf.nameById(type) === 'UDPTunnel' ) {
-            //TODO handle voice packets
+        if (this.protobuf.nameById(type) === 'UDPTunnel' ) {
+            this.readAudio(data);
         } else {
             var msg = this.protobuf.decodePacket(type, data);
             this._processMessage(type, msg);
@@ -88,6 +88,64 @@ class Connection extends EventEmitter {
             return Promise.reject(e)
         }
 
+    }
+
+    readAudio(data) {
+        // Packet format:
+        // https://github.com/mumble-voip/mumble-protocol/blob/master/voice_data.rst#packet-format
+        const audioType = (data[0] & 0xE0) >> 5;
+        const audioTarget = data[0] & 0x1F;
+
+        //console.debug("\nAUDIO DATA length:" + data.length + ' audioType:' + audioType + ' audioTarget: ' + audioTarget);
+
+        if (audioType != Connection.codec().Opus) {
+            // Not OPUS-encoded => not supported :/
+            // Should we warn the user here? Throw an error?
+            // Or just do nothing to not crash a program?
+            return;
+        }
+
+        // Offset in data from where we are currently reading
+        var offset = 1;
+
+        var varInt = Util.fromVarInt(data.slice(offset, offset + 9));
+        const sender = varInt.value;
+        offset += varInt.consumed;
+
+        varInt = Util.fromVarInt(data.slice(offset, offset + 9));
+        const sequence = varInt.value;
+        offset += varInt.consumed;
+
+        //console.debug("\tsender:" + sender + ' sequence:' + sequence);
+
+        // Opus header
+        varInt = Util.fromVarInt(data.slice(offset, offset + 9));
+        offset += varInt.consumed;
+        const opusHeader = varInt.value;
+
+        const opusLength = opusHeader & 0x1FFF;
+        const lastFrame = (opusHeader & 0x2000) ? true : false; // Don't rely on it!
+
+        //console.debug("\topus header:" + opusHeader + ' length:' + opusLength + ' lastFrame:' + lastFrame);
+
+        const opusData = data.slice(offset, offset + opusLength);
+
+        //console.debug("\tOPUS DATA LENGTH:" + opusData.length + ' DATA:', opusData);
+
+        const decoded = this.currentEncoder.decode(opusData);
+        //console.debug("\tDECODED DATA LENGTH:" + decoded.length + ' DATA:', decoded);
+
+        const voiceData = {
+            audioType: audioType,
+            whisperTarget: audioTarget,
+            sender: sender,
+            sequence: sequence,
+            lastFrame: lastFrame,
+            opusData: opusData,
+            decodedData: decoded
+        }
+
+        this.emit('voiceData', voiceData);
     }
 
     writeAudio(packet, whisperTarget, codec, voiceSequence, final) {
