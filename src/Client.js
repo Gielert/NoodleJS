@@ -117,6 +117,19 @@ class Client extends EventEmitter {
         return this.user.channel.sendMessage(message, recursive)
     }
 
+    /**
+     * Switches to another channel
+     * @param  {Number} id         The id of the channel to switch to
+     * @return {Promise<>}
+     */
+    switchChannel(id) {
+        if (this.channels.has(id)) {
+            return this.connection.writeProto('UserState', {session: this.user.session, actor: this.user.session , channelId: id})
+        } else {
+            return Promise.reject('ChannelId unknown')
+        }
+    }
+
     mute() {
         this.connection.writeProto('UserState', {session: this.user.session, actor: this.user.session , selfMute: true})
     }

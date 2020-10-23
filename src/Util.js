@@ -7,7 +7,7 @@ class Util {
         var arr = [];
         if( i < 0 ) {
             i = ~i;
-            if( i <= 0x3 ) { return new Buffer([ 0xFC | i ]); }
+            if( i <= 0x3 ) { return Buffer.from([ 0xFC | i ]); }
 
             arr.push( 0xF8 );
         }
@@ -37,7 +37,7 @@ class Util {
         }
 
         return {
-            value: new Buffer( arr ),
+            value: Buffer.from( arr ),
             length: arr.length
         };
     }

@@ -2,7 +2,7 @@ const tls = require('tls');
 const Protobuf = require('./Protobuf')
 const Promise = require('bluebird')
 const EventEmitter = require('events').EventEmitter
-const OpusEncoder = require('node-opus').OpusEncoder
+const OpusEncoder = require('@discordjs/opus').OpusEncoder
 const Constants = require('./Constants')
 const Util = require('./Util')
 
@@ -11,7 +11,7 @@ class Connection extends EventEmitter {
         super()
 
         this.options = options;
-        this.opusEncoder = new OpusEncoder(Constants.sampleRate)
+        this.opusEncoder = new OpusEncoder(Constants.Audio.sampleRate, 1)
         this.currentEncoder = this.opusEncoder
         this.codec = Connection.codec().Opus
         this.voiceSequence = 0
@@ -72,7 +72,7 @@ class Connection extends EventEmitter {
     }
 
     _writeHeader(type, data) {
-        const header = new Buffer(6)
+        const header = Buffer.alloc(6)
         header.writeUInt16BE(type, 0)
         header.writeUInt32BE(data, 2)
         this._writePacket(header)
@@ -102,7 +102,7 @@ class Connection extends EventEmitter {
 
         const sequenceVarint = Util.toVarint(voiceSequence)
 
-        const voiceHeader = new Buffer(1 + sequenceVarint.length)
+        const voiceHeader = Buffer.alloc(1 + sequenceVarint.length)
         voiceHeader[0] = typeTarget
         sequenceVarint.value.copy(voiceHeader, 1, 0)
         let header
@@ -122,7 +122,7 @@ class Connection extends EventEmitter {
             throw new TypeError('Celt is not supported')
         }
 
-        const frame = new Buffer(header.length + packet.length)
+        const frame = Buffer.alloc(header.length + packet.length)
         header.copy(frame, 0)
 
         packet.copy(frame, header.length)

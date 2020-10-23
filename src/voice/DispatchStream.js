@@ -51,7 +51,7 @@ class DispatchStream extends WritableStream {
     }
 
     _createFrameBuffer() {
-        return new Buffer(Constants.Audio.frameSize * 2)
+        return Buffer.alloc(Constants.Audio.frameSize * 2)
     }
 
     _processAudioBuffer() {
