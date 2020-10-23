@@ -136,13 +136,13 @@ class Connection extends EventEmitter {
         //console.debug("\tDECODED DATA LENGTH:" + decoded.length + ' DATA:', decoded);
 
         const voiceData = {
-            audioType: audioType,
+            audioType: audioType,        // For the moment, will be 4 = OPUS
             whisperTarget: audioTarget,
-            sender: sender,
+            sender: sender,              // Session ID of the user sending the audio
             sequence: sequence,
-            lastFrame: lastFrame,
-            opusData: opusData,
-            decodedData: decoded
+            lastFrame: lastFrame,        // Don't rely on it!
+            opusData: opusData,          // Voice data encoded, as it came in
+            decodedData: decoded         // Voice data decoded (48000, 1ch, 16bit)
         }
 
         this.emit('voiceData', voiceData);
