@@ -124,11 +124,37 @@ class Client extends EventEmitter {
     /**
      * Switches to another channel
      * @param  {Number} id         The id of the channel to switch to
-     * @return {Promise<>}
+     * @return {Promise<any>}
      */
     switchChannel(id) {
         if (this.channels.has(id)) {
             return this.connection.writeProto('UserState', {session: this.user.session, actor: this.user.session , channelId: id})
+        } else {
+            return Promise.reject('ChannelId unknown')
+        }
+    }
+
+    /**
+     * Starts listening to another channel without joining it
+     * @param  {Number} id         The id of the channel to start listening to
+     * @return {Promise<any>}
+     */
+    startListeningToChannel(id) {
+        if (this.channels.has(id)) {
+            return this.connection.writeProto('UserState', {session: this.user.session, listeningChannelAdd: [id]})
+        } else {
+            return Promise.reject('ChannelId unknown')
+        }
+    }
+
+    /**
+     * Stops listening to another channel
+     * @param  {Number} id         The id of the channel to stop listening to
+     * @return {Promise<any>}
+     */
+    stopListeningToChannel(id) {
+        if (this.channels.has(id)) {
+            return this.connection.writeProto('UserState', {session: this.user.session, listeningChannelRemove: [id]})
         } else {
             return Promise.reject('ChannelId unknown')
         }
