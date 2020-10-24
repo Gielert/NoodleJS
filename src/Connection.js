@@ -15,7 +15,7 @@ class Connection extends EventEmitter {
         this.currentEncoder = this.opusEncoder
         this.codec = Connection.codec().Opus
         this.voiceSequence = 0
-
+        this.codecWarningShown = {};
     }
 
     connect() {
@@ -38,6 +38,9 @@ class Connection extends EventEmitter {
     static codec() {
         return {
             Celt: 0,
+            Ping: 1,
+            Speex: 2,
+            CeltBeta: 3,
             Opus: 4
         }
     }
@@ -98,12 +101,18 @@ class Connection extends EventEmitter {
 
         //console.debug("\nAUDIO DATA length:" + data.length + ' audioType:' + audioType + ' audioTarget: ' + audioTarget);
 
-        if (audioType != Connection.codec().Opus) {
-            // Not OPUS-encoded => not supported :/
-            // Should we warn the user here? Throw an error?
-            // Or just do nothing to not crash a program?
+        if (audioType == Connection.codec().Ping) {
+            // Nothing to do but don't display a warning
+            console.log('Audio PING packet received');
+            return;
+        } else if (audioType > 4) {
+            // We don't know what type this is
+            console.warn('Unknown audioType in packet detected: ' + audioType);
             return;
         }
+
+        // It's an "Encoded audio data packet" (CELT Alpha, Speex, CELT Beta 
+        // or Opus). So it's safe to parse the header
 
         // Offset in data from where we are currently reading
         var offset = 1;
@@ -116,6 +125,16 @@ class Connection extends EventEmitter {
         const sequence = varInt.value;
         offset += varInt.consumed;
 
+        if (audioType != Connection.codec().Opus) {
+            // Not OPUS-encoded => not supported :/
+            // Check if we already printed a warning for this audiostream
+            if ((!this.codecWarningShown[sender]) || (sequence < this.codecWarningShown[sender])) {
+                console.warn('Unspported audio codec in voice stream from user ' + sender + ': ', audioType);
+            }
+            this.codecWarningShown[sender] = sequence;
+            return;
+        }
+
         //console.debug("\tsender:" + sender + ' sequence:' + sequence);
 
         // Opus header
@@ -124,7 +143,7 @@ class Connection extends EventEmitter {
         const opusHeader = varInt.value;
 
         const opusLength = opusHeader & 0x1FFF;
-        const lastFrame = (opusHeader & 0x2000) ? true : false; // Don't rely on it!
+        const lastFrame = (opusHeader & 0x2000) ? true : false;
 
         //console.debug("\topus header:" + opusHeader + ' length:' + opusLength + ' lastFrame:' + lastFrame);
 
