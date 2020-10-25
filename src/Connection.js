@@ -15,7 +15,7 @@ class Connection extends EventEmitter {
         this.currentEncoder = this.opusEncoder
         this.codec = Connection.codec().Opus
         this.voiceSequence = 0
-
+        this.codecWarningShown = {};
     }
 
     connect() {
@@ -38,6 +38,9 @@ class Connection extends EventEmitter {
     static codec() {
         return {
             Celt: 0,
+            Ping: 1,
+            Speex: 2,
+            CeltBeta: 3,
             Opus: 4
         }
     }
@@ -55,8 +58,8 @@ class Connection extends EventEmitter {
     }
 
     _processData(type, data) {
-        if( this.protobuf.nameById(type) === 'UDPTunnel' ) {
-            //TODO handle voice packets
+        if (this.protobuf.nameById(type) === 'UDPTunnel' ) {
+            this.readAudio(data);
         } else {
             var msg = this.protobuf.decodePacket(type, data);
             this._processMessage(type, msg);
@@ -88,6 +91,80 @@ class Connection extends EventEmitter {
             return Promise.reject(e)
         }
 
+    }
+
+    readAudio(data) {
+        // Packet format:
+        // https://github.com/mumble-voip/mumble-protocol/blob/master/voice_data.rst#packet-format
+        const audioType = (data[0] & 0xE0) >> 5;
+        const audioTarget = data[0] & 0x1F;
+
+        //console.debug("\nAUDIO DATA length:" + data.length + ' audioType:' + audioType + ' audioTarget: ' + audioTarget);
+
+        if (audioType == Connection.codec().Ping) {
+            // Nothing to do but don't display a warning
+            console.log('Audio PING packet received');
+            return;
+        } else if (audioType > 4) {
+            // We don't know what type this is
+            console.warn('Unknown audioType in packet detected: ' + audioType);
+            return;
+        }
+
+        // It's an "Encoded audio data packet" (CELT Alpha, Speex, CELT Beta 
+        // or Opus). So it's safe to parse the header
+
+        // Offset in data from where we are currently reading
+        var offset = 1;
+
+        var varInt = Util.fromVarInt(data.slice(offset, offset + 9));
+        const sender = varInt.value;
+        offset += varInt.consumed;
+
+        varInt = Util.fromVarInt(data.slice(offset, offset + 9));
+        const sequence = varInt.value;
+        offset += varInt.consumed;
+
+        if (audioType != Connection.codec().Opus) {
+            // Not OPUS-encoded => not supported :/
+            // Check if we already printed a warning for this audiostream
+            if ((!this.codecWarningShown[sender]) || (sequence < this.codecWarningShown[sender])) {
+                console.warn('Unspported audio codec in voice stream from user ' + sender + ': ', audioType);
+            }
+            this.codecWarningShown[sender] = sequence;
+            return;
+        }
+
+        //console.debug("\tsender:" + sender + ' sequence:' + sequence);
+
+        // Opus header
+        varInt = Util.fromVarInt(data.slice(offset, offset + 9));
+        offset += varInt.consumed;
+        const opusHeader = varInt.value;
+
+        const opusLength = opusHeader & 0x1FFF;
+        const lastFrame = (opusHeader & 0x2000) ? true : false;
+
+        //console.debug("\topus header:" + opusHeader + ' length:' + opusLength + ' lastFrame:' + lastFrame);
+
+        const opusData = data.slice(offset, offset + opusLength);
+
+        //console.debug("\tOPUS DATA LENGTH:" + opusData.length + ' DATA:', opusData);
+
+        const decoded = this.currentEncoder.decode(opusData);
+        //console.debug("\tDECODED DATA LENGTH:" + decoded.length + ' DATA:', decoded);
+
+        const voiceData = {
+            audioType: audioType,        // For the moment, will be 4 = OPUS
+            whisperTarget: audioTarget,
+            sender: sender,              // Session ID of the user sending the audio
+            sequence: sequence,
+            lastFrame: lastFrame,        // Don't rely on it!
+            opusData: opusData,          // Voice data encoded, as it came in
+            decodedData: decoded         // Voice data decoded (48000, 1ch, 16bit)
+        }
+
+        this.emit('voiceData', voiceData);
     }
 
     writeAudio(packet, whisperTarget, codec, voiceSequence, final) {

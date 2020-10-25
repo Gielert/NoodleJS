@@ -90,6 +90,10 @@ class Client extends EventEmitter {
         this.connection.on('ChannelState', data => channelState.handle(data))
         // this.connection.on('CryptSetup', data => console.log(data))
         this.connection.on('TextMessage', data => textMessage.handle(data));
+
+        this.connection.on('voiceData', (voiceData) => {
+            this.emit('voiceData', voiceData)
+        })
     }
 
     /**
