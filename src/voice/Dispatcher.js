@@ -9,16 +9,16 @@ class Dispatcher extends EventEmitter {
         this.connection = this.client.connection
     }
 
-    playFile(filename) {
-        this.play(filename)
+    playFile(filename, voiceTarget) {
+        this.play(filename, voiceTarget)
     }
 
-    playStream(stream) {
-        this.play(stream)
+    playStream(stream, voiceTarget) {
+        this.play(stream, voiceTarget)
     }
 
-    play(unknown) {
-        this.dispatchStream = new DispatchStream(this.connection)
+    play(unknown, voiceTarget) {
+        this.dispatchStream = new DispatchStream(this.connection, voiceTarget)
         this.dispatchStream.once('finish', () => {
             this.emit('end')
         })
