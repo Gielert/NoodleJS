@@ -160,6 +160,33 @@ class Client extends EventEmitter {
         }
     }
 
+    /**
+     * Set up a voiceTarget to be optionally used when sending voice data
+     * @param  {Number} targetId       The id for this voiceTarget. Must be between 4 and 30
+     * @param  {Array.<Number>} userIds  Array of user sessions to send to. Can be empty.
+     * @param  {Number} channelId      ChannelId to send to. Ignored when userIds is not empty.
+     * @return {Promise<any>}
+     */
+    setupVoiceTarget(targetId, userIds, channelId) {
+        if (targetId < 4 || targetId > 30) {
+            return Promise.reject('targetId must be between 3 and 30')
+        }
+
+        if (userIds.length) {
+            for (var idx in userIds) {
+                if (!this.users.has(userIds[idx])) {
+                    return Promise.reject('userId ' + userIds[idx] + ' unknown')
+                }
+            }
+            return this.connection.writeProto('VoiceTarget', {id: targetId, targets: [{session: userIds}]})
+        } else {
+            if (!this.channels.has(channelId)) {
+                return Promise.reject('ChannelId unknown')
+            }
+            return this.connection.writeProto('VoiceTarget', {id: targetId, targets: [{channelId: channelId}]})
+        }
+    }
+
     mute() {
         this.connection.writeProto('UserState', {session: this.user.session, actor: this.user.session , selfMute: true})
     }

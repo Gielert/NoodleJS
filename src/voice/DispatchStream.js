@@ -3,7 +3,7 @@ const EventEmitter = require('events').EventEmitter
 const Constants = require('../Constants')
 
 class DispatchStream extends WritableStream {
-    constructor(connection) {
+    constructor(connection, voiceTarget) {
         super()
         this.connection = connection
         this.processObserver = new EventEmitter()
@@ -12,6 +12,8 @@ class DispatchStream extends WritableStream {
 
         this.frameQueue = []
         this.lastFrame = this._createFrameBuffer()
+
+        this.whisperId = voiceTarget
 
         this._volume = 1
         this.lastFrameWritten = 0
