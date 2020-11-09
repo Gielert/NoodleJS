@@ -1,6 +1,6 @@
 {
   "name": "noodle.js",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "homepage": "https://github.com/Gielert/NoodleJS",
   "bugs": "https://github.com/Gielert/NoodleJS/issues",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "https://github.com/Gielert/NoodleJS.git"
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=10.0.0"
   },
   "description": "A NodeJS mumble client",
   "main": "src/Client.js",

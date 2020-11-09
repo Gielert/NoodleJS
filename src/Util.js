@@ -42,6 +42,60 @@ class Util {
         };
     }
 
+    static fromVarInt(buf) {
+        // TODO: 111110__ + varint	Negative recursive varint
+        // TODO: 111111xx       	Byte-inverted negative two bit number (~xx)
+
+        var retVal = {
+            value: 0,
+            consumed: 0
+        }
+
+        if (buf[0] < 0x80) {
+            // 0xxxxxxx            7 bit positive number
+            retVal.value = buf[0];
+            retVal.consumed = 1;
+        } else if (buf[0] < 0xC0) {
+            // 10xxxxxx + 1 byte   14-bit positive number
+            retVal.value = (buf[0] & 0x3F) << 8;
+            retVal.value |= buf[1];
+            retVal.consumed = 2;
+        } else if (buf[0] < 0xE0) {
+            // 110xxxxx + 2 bytes  21-bit positive number
+            retVal.value = (buf[0] & 0x1F) << 16;
+            retVal.value |= (buf[1]) << 8;
+            retVal.value |= (buf[2]);
+            retVal.consumed = 3;
+        } else if (buf[0] < 0xF0) {
+            // 1110xxxx + 3 bytes  28-bit positive number
+            retVal.value = (buf[0] & 0x0F) << 24;
+            retVal.value |= (buf[1]) << 16;
+            retVal.value |= (buf[2]) << 8;
+            retVal.value |= (buf[3]);
+            retVal.consumed = 4;
+        } else if (buf[0] < 0xF4) {
+            // 111100__ + int (32-bit)
+            retVal.value = (buf[1]) << 24;
+            retVal.value |= (buf[2]) << 16;
+            retVal.value |= (buf[3]) << 8;
+            retVal.value |= (buf[4]);
+            retVal.consumed = 5;
+        } else if (buf[0] < 0xFC) {
+            // 111101__ + long (64-bit)
+            retVal.value = (buf[1]) << 56;
+            retVal.value |= (buf[2]) << 48;
+            retVal.value |= (buf[3]) << 40;
+            retVal.value |= (buf[4]) << 32;
+            retVal.value |= (buf[5]) << 24;
+            retVal.value |= (buf[6]) << 16;
+            retVal.value |= (buf[7]) << 8;
+            retVal.value |= (buf[8]);
+            retVal.consumed = 9;
+        }
+
+        return retVal;
+    }
+
     static encodeVersion(major, minor, patch) {
         return  ((major & 0xffff) << 16) |
         ((minor & 0xff) << 8) |

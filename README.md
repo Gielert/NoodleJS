@@ -29,7 +29,7 @@ NoodleJS is a node.js module that allows you to interact with Mumble servers ver
 This is a complete rewrite from the previous version of NoodleJS.
 
 ### Installation
-**Node.js >= 6.0.0 is required.**
+**Node.js >= 10.0.0 is required.**
 
 #### Audio
 You can send audio in two ways.
