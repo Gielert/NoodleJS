@@ -42,7 +42,7 @@ class Client extends EventEmitter {
 
         this.connection.on('connected', () => {
             this.connection.writeProto('Version', {
-                version: Util.encodeVersion(1, 0, 0),
+                version: Util.encodeVersion(1, 3, 0),
                 release: 'NoodleJS Client',
                 os: 'NodeJS',
                 os_version: process.version
