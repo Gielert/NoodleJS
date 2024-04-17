@@ -5,19 +5,6 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "npm"
-    directory: "/vue"
+    directory: "/"
     schedule:
       interval: "monthly"
-    groups:
-      vue:
-        patterns:
-          - "vue"
-          - "@vue/*"
-      eslint:
-        patterns:
-          - "eslint"
-          - "eslint-*"
-      cypress:
-        patterns:
-          - "cypress"
-          - "cypress-*"
