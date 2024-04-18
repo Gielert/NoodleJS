@@ -41,5 +41,5 @@ jobs:
     - name: Test
       run: yarn test
       env:
-        MUMBLE_URL: grumble
+        MUMBLE_URL: 127.0.0.1
     
