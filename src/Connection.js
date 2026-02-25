@@ -1,10 +1,12 @@
 const tls = require('tls');
+const dgram = require('dgram');
 const Protobuf = require('./Protobuf')
 const Promise = require('bluebird')
 const EventEmitter = require('events').EventEmitter
 const OpusEncoder = require('@discordjs/opus').OpusEncoder
 const Constants = require('./Constants')
 const Util = require('./Util')
+const CryptStateOCB2 = require('./CryptStateOCB2Native')
 
 class Connection extends EventEmitter {
     constructor(options) {
@@ -16,23 +18,40 @@ class Connection extends EventEmitter {
         this.codec = Connection.codec().Opus
         this.voiceSequence = 0
         this.codecWarningShown = {};
+        this.cryptState = new CryptStateOCB2()
+        
+        this.tcpSocket = null
+        this.udpSocket = null
     }
 
     connect() {
         new Protobuf().then((protobuf) => {
             this.protobuf = protobuf
-            this.socket = tls.connect(this.options.port, this.options.url, this.options, () => {
+            this.tcpSocket = tls.connect(this.options.port, this.options.url, this.options, () => {
                 this.emit('connected')
             })
-            this.socket.on('error', error => {
+            this.tcpSocket.on('error', error => {
                 this.emit('error', error)
             })
-            this.socket.on('data', this._onReceiveData.bind(this))
+            this.tcpSocket.on('data', this._onReceiveData.bind(this))
+
+            
+            this.udpSocket = dgram.createSocket('udp4')
+            this.udpSocket.connect(this.options.port, this.options.url, () => {
+                console.log('UDP socket connected to', this.options.url, 'on port', this.options.port)
+            })
+            this.udpSocket.on('error', error => {
+                this.emit('error', error);
+            });
+            this.udpSocket.on('message', this._onReceiveUDPData.bind(this));
         })
     }
 
     close() {
-        this.socket.end()
+        if (this.udpSocket) {
+            this.udpSocket.close()
+        }
+        this.tcpSocket.end()
     }
 
     static codec() {
@@ -57,6 +76,17 @@ class Connection extends EventEmitter {
         }
     }
 
+    _onReceiveUDPData(data) {
+        // Decrypt incoming UDP packet
+        const buf = this.cryptState.decrypt(data)
+        if (!buf) {
+            console.warn('Failed to decrypt UDP packet')
+            return
+        }
+        const type = buf[0]
+        this._processUDPData(type, buf.slice(1))
+    }
+
     _processData(type, data) {
         if (this.protobuf.nameById(type) === 'UDPTunnel' ) {
             this.readAudio(data);
@@ -66,12 +96,22 @@ class Connection extends EventEmitter {
         }
     }
 
+    _processUDPData(type, data) {
+        const typeName = this.protobuf.nameById(type, true)
+        var msg = this.protobuf.decodeUDPPacket(typeName, data);
+        if (typeName === 'Audio') {
+            this.emit('voiceData', msg)
+        } else {
+            this.emit("Ping", {...msg, udp: true})
+        }
+    }
+
     _processMessage(type, msg) {
         this.emit(this.protobuf.nameById(type), msg);
     }
 
     _writePacket(buffer) {
-        this.socket.write(buffer)
+        this.tcpSocket.write(buffer)
     }
 
     _writeHeader(type, data) {
@@ -93,9 +133,26 @@ class Connection extends EventEmitter {
 
     }
 
+    writeProtoUDP(type, data) {
+        try {
+            const packet = this.protobuf.encodeUDPPacket(type, data)
+            const encryptedPacket = this.cryptState.encrypt(packet)
+            this.udpSocket.send(encryptedPacket, (err) => {
+                if (err) {
+                    Promise.reject(err)
+                }
+            })
+            return Promise.resolve()
+        } catch(e) {
+            return Promise.reject(e)
+        }
+    }
+            
+
     readAudio(data) {
         // Packet format:
         // https://github.com/mumble-voip/mumble-protocol/blob/master/voice_data.rst#packet-format
+        
         const audioType = (data[0] & 0xE0) >> 5;
         const audioTarget = data[0] & 0x1F;
 
@@ -167,7 +224,7 @@ class Connection extends EventEmitter {
         this.emit('voiceData', voiceData);
     }
 
-    writeAudio(packet, whisperTarget, codec, voiceSequence, final) {
+    _writeAudioTCP(packet, whisperTarget, codec, voiceSequence, final) {
         packet = this.currentEncoder.encode(packet)
 
         const type = codec === Connection.codec().Opus ? 4 : 0
@@ -209,6 +266,47 @@ class Connection extends EventEmitter {
         this._writeHeader(this.protobuf.idByName('UDPTunnel'), voiceHeader.length + frame.length)
         this._writePacket(voiceHeader)
         this._writePacket(frame)
+    }
+
+    _writeAudioUDP(packet, whisperTarget, codec, voiceSequence, final) {
+         packet = this.currentEncoder.encode(packet)
+
+        if (codec !== Connection.codec().Opus) {
+            throw new TypeError('Only Opus codec is supported with protobuf UDP format')
+        }
+
+        if (typeof voiceSequence !== 'number')
+            voiceSequence = this.voiceSequence
+
+        const audioMessage = {
+            target: whisperTarget || 0,
+            frameNumber: voiceSequence,
+            opusData: packet,
+            isTerminator: final || false
+        }
+
+
+        const encodedAudio = this.protobuf.encodeUDPPacket('Audio', audioMessage)
+        const packetWithType = Buffer.concat([Buffer.from([0x00]), encodedAudio])
+
+        voiceSequence++
+
+        const encryptedPacket = this.cryptState.encrypt(packetWithType)
+            
+        this.udpSocket.send(encryptedPacket, (err) => {
+            if (err) {
+                this.emit('error', err)
+            }
+        })
+    }
+
+    writeAudio(packet, whisperTarget, codec, voiceSequence, final) {
+        if (this.udpSocket) {
+            this._writeAudioUDP(packet, whisperTarget, codec, voiceSequence, final)
+            
+        } else {
+            this._writeAudioTCP(packet, whisperTarget, codec, voiceSequence, final)
+        }
 
         if (voiceSequence > this.voiceSequence)
             this.voiceSequence = voiceSequence

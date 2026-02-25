@@ -3,4 +3,6 @@ node_modules/
 coverage/
 mumble-config/
 yarn-error.log
-.nyc-output/
+.nyc_output/
+dist/
+build/

@@ -1,4 +1,4 @@
-// Copyright 2005-2020 The Mumble Developers. All rights reserved.
+﻿// Copyright The Mumble Developers. All rights reserved.
 // Use of this source code is governed by a BSD-style license
 // that can be found in the LICENSE file at the root of the
 // Mumble source tree or at <https://www.mumble.info/LICENSE>.
@@ -10,8 +10,12 @@ package MumbleProto;
 option optimize_for = SPEED;
 
 message Version {
-	// 2-byte Major, 1-byte Minor and 1-byte Patch version number.
-	optional uint32 version = 1;
+	// Legacy version number format.
+	optional uint32 version_v1 = 1;
+	// New version number format.
+	// Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+	optional uint64 version_v2 = 5;
+
 	// Client release name.
 	optional string release = 2;
 	// Client OS name.
@@ -37,6 +41,8 @@ message Authenticate {
 	// A list of CELT bitstream version constants supported by the client.
 	repeated int32 celt_versions = 4;
 	optional bool opus = 5 [default = false];
+	// 0 = REGULAR, 1 = BOT
+	optional int32 client_type = 6 [default = 0];
 }
 
 // Sent by the client to notify the server that the client is still alive.
@@ -90,6 +96,8 @@ message Reject {
 		// The user did not provide a certificate but one is required.
 		NoCertificate = 7;
 		AuthenticatorFail = 8;
+		// The server is currently not accepting new connections
+		NoNewConnections = 9;
 	}
 	// Rejection type.
 	optional RejectType type = 1;
@@ -107,6 +115,9 @@ message ServerSync {
 	// Server welcome text.
 	optional string welcome_text = 3;
 	// Current user permissions in the root channel.
+	// Note: The permissions data type usually is uin32 (e.g. in PermissionQuery and PermissionDenied messages). Here
+	// it is uint64 because of an oversight in the past. Nonetheless it should never exceed the uin32 range.
+	// See also: https://github.com/mumble-voip/mumble/issues/5139
 	optional uint64 permissions = 4;
 }
 
@@ -164,14 +175,23 @@ message UserRemove {
 	optional uint32 actor = 2;
 	// Reason for the kick, stored as the ban reason if the user is banned.
 	optional string reason = 3;
-	// True if the kick should result in a ban.
+	// True if the user shall be banned, false if the user shall be kicked
 	optional bool ban = 4;
+	// True if the user shall be banned by certificate.
+	optional bool ban_certificate = 5;
+	// True if the user shall be banned by IP.
+	optional bool ban_ip = 6;
 }
 
 // Sent by the server when it communicates new and changed users to client.
 // First seen during login procedure. May be sent by the client when it wishes
 // to alter its state.
 message UserState {
+	message VolumeAdjustment {
+		optional uint32 listening_channel = 1;
+		optional float volume_adjustment = 2;
+	}
+
 	// Unique user session ID of the user whose state this is, may change on
 	// reconnect.
 	optional uint32 session = 1;
@@ -223,6 +243,8 @@ message UserState {
 	repeated uint32 listening_channel_add = 21;
 	// a list of channels the user does no longer want to listen to.
 	repeated uint32 listening_channel_remove = 22;
+	// A list of volume adjustments the user has applied to listeners
+	repeated VolumeAdjustment listening_volume_adjustment = 23;
 }
 
 // Relays information on the bans. The client may send the BanList message to
@@ -497,6 +519,15 @@ message UserStats {
 		optional uint32 resync = 4;
 	}
 
+	message RollingStats {
+		// Rolling packet statistics time window as defined on the server.
+		optional uint32 time_window = 1;
+		// Rolling packet statistics for packets received from the client.
+		optional Stats from_client = 2;
+		// Rolling packet statistics for packets sent by the server.
+		optional Stats from_server = 3;
+	}
+
 	// User whose stats these are.
 	optional uint32 session = 1;
 	// True if the message contains only mutable stats (packets, ping).
@@ -537,6 +568,9 @@ message UserStats {
 	// True if the user has a strong certificate.
 	optional bool strong_certificate = 18 [default = false];
 	optional bool opus = 19 [default = false];
+
+	// Rolling packet statistics
+	optional RollingStats rolling_stats = 20;
 }
 
 // Used by the client to request binary data from the server. By default large
@@ -571,16 +605,35 @@ message ServerConfig {
 	optional uint32 image_message_length = 5;
 	// The maximum number of users allowed on the server.
 	optional uint32 max_users = 6;
+	// Whether using Mumble's recording feature is allowed on the server
+	optional bool recording_allowed = 7;
 }
 
 // Sent by the server to inform the clients of suggested client configuration
 // specified by the server administrator.
 message SuggestConfig {
-	// Suggested client version.
-	optional uint32 version = 1;
+	// Suggested client version in the legacy format.
+	optional uint32 version_v1 = 1;
+	// Suggested client version in the new format.
+	// Necessary since patch level may exceed 255. (See https://github.com/mumble-voip/mumble/issues/5827)
+	optional uint64 version_v2 = 4;
+
 	// True if the administrator suggests positional audio to be used on this
 	// server.
 	optional bool positional = 2;
 	// True if the administrator suggests push to talk to be used on this server.
 	optional bool push_to_talk = 3;
+}
+
+// Used to send plugin messages between clients
+message PluginDataTransmission {
+	// The session ID of the client this message was sent from
+	optional uint32 senderSession = 1;
+	// The session IDs of the clients that should receive this message
+	repeated uint32 receiverSessions = 2 [packed = true];
+	// The data that is sent
+	optional bytes data = 3;
+	// The ID of the sent data. This will be used by plugins to check whether they will
+	// process it or not
+	optional string dataID = 4;
 }

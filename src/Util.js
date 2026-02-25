@@ -97,13 +97,28 @@ class Util {
     }
 
     static encodeVersion(major, minor, patch) {
-        return  ((major & 0xffff) << 16) |
-        ((minor & 0xff) << 8) |
-        (patch & 0xff)
+        // To uint32
+        if (patch > 255) {
+            return (major << 16) | (minor << 8) + 255;
+        } else {
+            return (major << 16) | (minor << 8) | patch;
+        }
+    }
+
+    static encodeVersionV2(major, minor, patch) {
+        // To uint64 - use protobufjs Long for compatibility
+        const protobuf = require('protobufjs')
+        const Long = protobuf.util.Long
+        
+        // Encode as: major (16 bits) << 48 | minor (16 bits) << 32 | patch (16 bits) << 16
+        const value = (BigInt(major) << 48n) | (BigInt(minor) << 32n) | (BigInt(patch) << 16n)
+        
+        // Convert BigInt to Long
+        return Long.fromString(value.toString(), true) // true = unsigned
     }
 
     static cloneObject(obj) {
-        return Object.assign(Object.create(obj), obj);
+        return { ...obj }
     }
 
     static adjustNetworkBandwidth(bitspersec) {

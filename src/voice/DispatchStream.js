@@ -18,6 +18,7 @@ class DispatchStream extends WritableStream {
         this._volume = 1
         this.lastFrameWritten = 0
         this.lastWrite = null
+        this.voiceSequence = 0  // Initialize to prevent NaN
     }
 
     open() {
@@ -99,7 +100,7 @@ class DispatchStream extends WritableStream {
     }
 
     _write(chunk, encoding, next) {
-        while(true) {
+        for(;;) {
             if(this.frameQueue.length >= Constants.Audio.frameLength) {
                 this.processObserver.once('written', () => {
                     this._write(chunk, encoding, next)

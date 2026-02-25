@@ -1,0 +1,32 @@
+# Development files
+.github/
+.nyc_output/
+test/
+coverage/
+*.log
+
+# Git
+.git/
+.gitignore
+.editorconfig
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build artifacts (will be rebuilt on install)
+build/
+*.tgz
+
+# Docker
+docker-compose.yml
+Dockerfile
+
+# Test files
+test-*.js
+verify-*.js
+
+# Documentation
+BUILDING.md

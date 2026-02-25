@@ -1,6 +1,6 @@
 {
   "name": "noodle.js",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "homepage": "https://github.com/Gielert/NoodleJS",
   "bugs": "https://github.com/Gielert/NoodleJS/issues",
   "repository": {
@@ -8,13 +8,21 @@
     "url": "https://github.com/Gielert/NoodleJS.git"
   },
   "engines": {
-    "node": ">=10.0.0"
+    "node": ">=20.19.4"
   },
   "description": "A NodeJS mumble client",
   "main": "src/Client.js",
+  "files": [
+    "src/",
+    "native/",
+    "binding.gyp",
+    "README.md"
+  ],
   "scripts": {
     "test": "nyc --reporter=text-summary mocha --exit",
-    "lint": "eslint src"
+    "lint": "eslint src --ext .js",
+    "install": "node-gyp rebuild",
+    "rebuild": "node-gyp rebuild"
   },
   "keywords": [
     "NodeJS",
@@ -23,17 +31,20 @@
   "author": "Michiel",
   "license": "MIT",
   "dependencies": {
-    "@discordjs/opus": "^0.8.0",
+    "@discordjs/opus": "^0.10.0",
     "bluebird": "^3.7.2",
     "fluent-ffmpeg": "^2.1.2",
-    "protobufjs": "^6.9.0"
+    "protobufjs": "^8.0.0"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.42",
     "chai": "^4.2.0",
-    "eslint": "^7.12.0",
-    "gulp": "^4.0.2",
-    "jsdoc-to-markdown": "^6.0.1",
+    "eslint": "^8.56.0",
     "mocha": "^8.2.0",
+    "node-addon-api": "^8.5.0",
+    "node-gyp": "^12.2.0",
     "nyc": "^15.1.0"
-  }
+  },
+  "gypfile": true,
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

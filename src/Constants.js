@@ -11,6 +11,11 @@ exports.Network = {
     quality: 40000
 }
 
+exports.ClientTypes = {
+    Normal: 0,
+    Bot: 1
+}
+
 /**
  * Options for a client
  * @typedef {Object} ClientOptions

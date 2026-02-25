@@ -11,6 +11,7 @@ const ChannelRemove = require('./handlers/ChannelRemove')
 const TextMessage = require('./handlers/TextMessage')
 const Collection = require('./structures/Collection')
 const Dispatcher = require('./voice/Dispatcher')
+const os = require('os')
 
 /**
  * The main class for interacting with the Mumble server
@@ -23,6 +24,18 @@ class Client extends EventEmitter {
      */
     constructor(options = {}) {
         super()
+
+        this.pingStatsTCP = {
+            avg: 0,
+            var: 0,
+            nb: 0
+        }
+
+        this.pingStatsUDP = {
+            avg: 0,
+            var: 0,
+            nb: 0
+        }
 
         /**
          * The options the client is instantiated with
@@ -42,16 +55,18 @@ class Client extends EventEmitter {
 
         this.connection.on('connected', () => {
             this.connection.writeProto('Version', {
-                version: Util.encodeVersion(1, 3, 0),
+                versionV1: Util.encodeVersion(1, 5, 0),
+                versionV2: Util.encodeVersionV2(1, 5, 0),
                 release: 'NoodleJS Client',
-                os: 'NodeJS',
-                os_version: process.version
+                os: os.version(),
+                osVersion: os.release()
             })
             this.connection.writeProto('Authenticate', {
                 username: this.options.name,
                 password: this.options.password,
                 opus: true,
-                tokens: this.options.tokens
+                tokens: this.options.tokens,
+                clientType: this.options.clientType || Constants.ClientTypes.Bot
             })
             this._pingRoutine()
         })
@@ -74,7 +89,7 @@ class Client extends EventEmitter {
          * The {@link Dispatcher} for the voiceConnection
          * @type {Dispatcher}
          */
-        this.voiceConnection = new Dispatcher(this)
+        this.voiceConnection = null
 
         const serverSync = new ServerSync(this)
         const userState = new UserState(this)
@@ -88,22 +103,63 @@ class Client extends EventEmitter {
         this.connection.on('UserRemove', data => userRemove.handle(data));
         this.connection.on('ChannelRemove', data => channelRemove.handle(data));
         this.connection.on('ChannelState', data => channelState.handle(data))
-        // this.connection.on('CryptSetup', data => console.log(data))
         this.connection.on('TextMessage', data => textMessage.handle(data));
+        
+        this.connection.on('CryptSetup', (data) => {
+            this.connection.cryptState.setKey(data.key, data.clientNonce, data.serverNonce)
+            this._ping()
+        })
+        
+        this.connection.on('Ping', data => {
+            const now = Date.now()
+            const rtt = now - data.timestamp
+
+            const type = data.udp ? 'UDP' : 'TCP'
+
+            // Update stats (average and variance) for the next ping packet
+            this[`pingStats${type}`].var = ((this[`pingStats${type}`].nb * this[`pingStats${type}`].var) + ((rtt - this[`pingStats${type}`].avg) * (rtt - this[`pingStats${type}`].avg))) / (this[`pingStats${type}`].nb + 1)
+            this[`pingStats${type}`].avg = ((this[`pingStats${type}`].nb * this[`pingStats${type}`].avg) + rtt) / (this[`pingStats${type}`].nb + 1)
+            this[`pingStats${type}`].nb += 1
+        })
 
         this.connection.on('voiceData', (voiceData) => {
             this.emit('voiceData', voiceData)
         })
+
+        this.connection.on("CodecVersion", (data) => {
+            if (data.opus) {
+                this.voiceConnection = new Dispatcher(this)
+            } else {
+                console.log("Warning: Server does not support Opus codec, voice features will not work")
+            }
+        });
+    }
+
+    _ping() {
+        const now = Date.now()
+        this.connection.writeProto('Ping', {
+            timestamp: now,
+            tcp_ping_avg: this.pingStatsTCP.avg,
+            tcp_ping_var: this.pingStatsTCP.var,
+            tcp_packets: this.pingStatsTCP.nb,
+            udp_ping_avg: this.pingStatsUDP.avg,
+            udp_ping_var: this.pingStatsUDP.var,
+            udp_packets: this.pingStatsUDP.nb
+        })
+        this.connection.writeProtoUDP('Ping', {
+            timestamp: now
+        });
     }
 
     /**
      * The ping routine for the client to keep the connection alive
+     * 10 seconds is the recommended interval according to the Mumble protocol
      * @private
      */
     _pingRoutine() {
         this.ping = setInterval(() => {
-            this.connection.writeProto('Ping', {timestamp: Date.now()})
-        }, 15000)
+            this._ping()
+        }, 10000)
     }
 
     connect() {

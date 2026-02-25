@@ -1,17 +1,21 @@
 const protobufjs = require('protobufjs')
 const path = require('path')
-const Messages = require('./Messages')
+const MessagesTCP = require('./MessagesTCP')
+const MessagesUDP = require('./MessagesUDP')
 const Promise = require('bluebird')
 
 class Protobuf {
     constructor() {
-        return protobufjs.load(path.join(__dirname, 'Mumble.proto'))
-            .then((root) => {
-                this.mumble = root
-                return Promise.resolve(this)
-            }).catch((err) => {
-                throw new Error(err)
-            })
+        return Promise.all([
+            protobufjs.load(path.join(__dirname, 'Mumble.proto')),
+            protobufjs.load(path.join(__dirname, 'MumbleUDP.proto'))
+        ]).then(([tcpRoot, udpRoot]) => {
+            this.mumble = tcpRoot
+            this.mumbleUDP = udpRoot
+            return Promise.resolve(this)
+        }).catch((err) => {
+            throw new Error(err)
+        })
     }
 
     encodePacket(type, payload) {
@@ -28,15 +32,29 @@ class Protobuf {
         return packet.decode(buffer).toJSON()
     }
 
-    nameById(id) {
-        return Messages[id]
+    nameById(id, isUDP = false) {
+        return isUDP ? MessagesUDP[id] : MessagesTCP[id]
     }
 
-    idByName(name) {
-        for (const key in Messages) {
-            if(Messages[key] == name)
+    idByName(name, isUDP = false) {
+        const messages = isUDP ? MessagesUDP : MessagesTCP
+        for (const key in messages) {
+            if(messages[key] == name)
                 return key
         }
+    }
+
+    encodeUDPPacket(type, payload) {
+        const packet = this.mumbleUDP.lookup(`MumbleUDP.${type}`)
+        if(packet.verify(payload))
+            throw new Error(`Error verifying payload for UDP packet ${type}`)
+        const message = packet.create(payload)
+        return packet.encode(message).finish()
+    }
+
+    decodeUDPPacket(type, buffer) {
+        const packet = this.mumbleUDP.lookup(`MumbleUDP.${type}`)
+        return packet.decode(buffer).toJSON()
     }
 }
 
