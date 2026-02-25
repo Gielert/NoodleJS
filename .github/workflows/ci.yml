@@ -57,3 +57,5 @@ jobs:
       
       - name: Run tests
         run: yarn test
+        env:
+          MUMBLE_URL: localhost

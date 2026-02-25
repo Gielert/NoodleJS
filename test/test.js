@@ -7,7 +7,7 @@ const ChannelRemove = require('../src/handlers/ChannelRemove')
 let client = null
 let client2 = null
 
-const url = process.env.MUMBLE_URL
+const url = process.env.MUMBLE_URL || 'localhost'
 
 before((done) => {
     client = new Client({url})
