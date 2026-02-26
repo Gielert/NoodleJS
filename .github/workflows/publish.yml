@@ -19,21 +19,31 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
       
-      - name: Install OpenSSL
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libssl-dev
+          sudo apt-get install -y libssl-dev ffmpeg
       
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       
       - name: Build native addon
         run: yarn rebuild
+
+      - name: Start Docker Compose services
+        run: docker compose up -d
+      
+      - name: Wait for services to be ready
+        run: sleep 10
       
       - name: Run tests
         run: yarn test
         env:
           MUMBLE_URL: localhost
+
+      - name: Stop Docker Compose services
+        if: always()
+        run: docker compose down
       
       - name: Publish to npm
         run: npm publish
