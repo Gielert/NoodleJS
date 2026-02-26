@@ -38,7 +38,7 @@ class Connection extends EventEmitter {
             
             this.udpSocket = dgram.createSocket('udp4')
             this.udpSocket.connect(this.options.port, this.options.url, () => {
-                console.log('UDP socket connected to', this.options.url, 'on port', this.options.port)
+                this.emit('udpConnected')
             })
             this.udpSocket.on('error', error => {
                 this.emit('error', error);

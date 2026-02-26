@@ -21,10 +21,10 @@ jobs:
           node-version: 20
           cache: 'yarn'
       
-      - name: Install OpenSSL
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libssl-dev
+          sudo apt-get install -y libssl-dev ffmpeg
       
       - name: Install dependencies
         run: yarn install --frozen-lockfile
