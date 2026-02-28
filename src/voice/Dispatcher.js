@@ -7,6 +7,7 @@ class Dispatcher extends EventEmitter {
         super()
         this.client = client
         this.connection = this.client.connection
+        this.volume = 1
     }
 
     playFile(filename, voiceTarget) {
@@ -19,6 +20,7 @@ class Dispatcher extends EventEmitter {
 
     play(unknown, voiceTarget) {
         this.dispatchStream = new DispatchStream(this.connection, voiceTarget)
+        this.dispatchStream.volume = this.volume
         this.dispatchStream.once('finish', () => {
             this.emit('end')
         })
@@ -34,11 +36,14 @@ class Dispatcher extends EventEmitter {
     }
 
     setVolume(volume) {
-        this.dispatchStream.volume = volume
+        this.volume = volume
+        if (this.dispatchStream) {
+            this.dispatchStream.volume = volume
+        }
     }
 
     getVolume() {
-        return this.dispatchStream.volume
+        return this.volume
     }
 
     stopStream() {
